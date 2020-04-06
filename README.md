@@ -1,10 +1,10 @@
-# Tarea 1 Mallas Geometricas: Incremental Delaunay Triangulation
+# Incremental Delaunay Triangulation visualization
 
-C++ implementation of the incremental Delaunay triangulation, with visualization. First homework for the course CC5501-1 Mallas Geométricas y Aplicaciones, of the University Of Chile.
+Incremental Delaunay triangulation with visualization. It was implemented using C++, CMake, imgui, glm, gl3w and glfw.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
 
