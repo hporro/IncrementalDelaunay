@@ -22,20 +22,20 @@ namespace POINT_GENERATOR {
         return -a;
     }
 
-    Vec2 gen_point(float a, float b, float c, Vec2 p0, Vec2 p1, Vec2 p3){
+    Vec2 gen_point(float a, float b, float c, Vec2 p0, Vec2 p1, Vec2 p2){
         assert(a+b+c-1<EPS);
-        return a*p0 + b*p1 + c*p3;
+        return Vec2(p0.x*a+p1.x*b+p2.x*c,p0.y*a+p1.y*b+p2.y*c);
     }
 
     //generates n points within a triangle
     //those might be in the 
-    std::vector<Vec2> gen_points_triangle(int n, Vec2 p0, Vec2 p1, Vec2 p3){    
+    std::vector<Vec2> gen_points_triangle(int n, Vec2 p0, Vec2 p1, Vec2 p2){
         std::vector<Vec2> points(n);
         for(auto i=0;i<n;i++){
             float a = dist01(rng);
             float b = max<float>(0.0,abs(dist01(rng)-a));
             float c = 1.0-a-b;
-            points[i] = gen_point(a,b,c,p0,p1,p3);
+            points[i] = gen_point(a,b,c,p0,p1,p2);
         }
         return points;
     }

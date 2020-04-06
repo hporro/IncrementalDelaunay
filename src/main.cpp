@@ -1,17 +1,16 @@
-#include <stdio.h>
+#include <iostream>
 
 #include <GL/gl3w.h>  
 #include <GLFW/glfw3.h>
 
 #include "GUI/gui.h"
-//#include "point_generator.h"
+#include "point_generator.h"
 
 static void glfw_error_callback(int error, const char* description){
-    fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+    std::cerr << "Glfw Error "<< error << ": " << description << std::endl;
 }
 
-int main(int, char**)
-{
+int main(int argn, char** argv){
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
@@ -32,7 +31,7 @@ int main(int, char**)
     bool err = gl3wInit() != 0;
     if (err)
     {
-        fprintf(stderr, "Failed to initialize OpenGL loader!\n");
+        std::cerr << "Failed to initialize OpenGL loader!" << std::endl;
         return 1;
     }
 
@@ -41,6 +40,18 @@ int main(int, char**)
     DelaunayGUI* dgui = new DelaunayGUI();
     dgui->state = gstate;
     dgui->init(window);
+
+    //gen points
+    Vec2 p1 = Vec2(10.0,10.0);
+    Vec2 p2 = Vec2(20.0,10.0);
+    Vec2 p3 = Vec2(20.0,20.0);
+    std::vector<Vec2> points = POINT_GENERATOR::gen_points_triangle(1,p1,p2,p3);
+    POINT_GENERATOR::print_points(points);
+
+    //gen triangulation
+    Triangle t(p1,p2,p3);
+    Triangulation tri(points,&t);
+    tri.print();
 
     // Main loop
     while (!glfwWindowShouldClose(window)){
