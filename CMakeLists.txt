@@ -6,9 +6,13 @@ set (CMAKE_CXX_STANDARD 11)
 # GLFW: window manager for OpenGL context
 find_package(glfw3 3.3 REQUIRED)
 
+# GLM: Math library
+add_subdirectory(extern/glm)
+
 # Homework implementation files
 set(DELAUNAY_VISUAL_SOURCES src/delaunay.h src/delaunay.cpp)
 add_library(delaunay_visual ${DELAUNAY_VISUAL_SOURCES})
+target_link_libraries(delaunay_visual PUBLIC glm)
 
 # gl3w: OpenGL context loader
 include_directories(extern/gl3w/include)
@@ -21,7 +25,13 @@ set(IMGUI_SOURCES extern/imgui/examples/imgui_impl_glfw.cpp extern/imgui/example
 add_library(imgui ${IMGUI_SOURCES})
 target_link_libraries(imgui PUBLIC glfw gl3w)
 
+# Delaunay GUI
+set(DELAUNAY_GUI_SOURCES src/GUI/gui.cpp)
+add_library(DelaunayGUI ${DELAUNAY_GUI_SOURCES})
+target_link_libraries(DelaunayGUI PRIVATE imgui)
+target_link_libraries(DelaunayGUI PUBLIC glfw gl3w)
+
 # main app
 add_executable(main src/main.cpp ../extern/imgui/imgui.h)
-target_link_libraries(main PRIVATE delaunay_visual glfw3 gl3w imgui)
+target_link_libraries(main PRIVATE delaunay_visual glfw3 gl3w DelaunayGUI)
 add_link_options(main -lGLEW)

@@ -1,26 +1,36 @@
 #ifndef DELAUNAY_H
 #define DELAUNAY_H
 
-typedef float numType;
+#include <vector>
+#include <glm/glm.hpp>
 
-class Point;
-class Vector;
-class Face;
-
-class Point {
+class Vertex {
 public:
-    numType x,y;
+    glm::vec2* pos;
+    int* he;
 };
 
-class Vector {
+class Triangle {
 public:
-    numType a,b;
+    int ind; // triangle index
+    bool isInside(glm::vec2 *p);
 };
 
-class Face {
+class Half_Edge {
 public:
-    Point *a,*b,*c;
-    Face *f1,*f2,*f3;
+    void flip();
+    int *twin; // twin half_edge index
+    int *vert; // vertex index
+};
+
+class Triangulation {
+public:
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    void draw(); // refills buffers
+    void drawCached(); // draws the same buffers from the prev frame
+    std::vector<Vertex*> vertices;
+    std::vector<Triangle*> triangles;
+    std::vector<Half_Edge*> h_edges;
 };
 
 #endif

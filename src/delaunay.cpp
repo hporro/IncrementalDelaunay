@@ -1,2 +1,1 @@
-#include <iostream>
-int main(){}
+#include "delaunay.h"
