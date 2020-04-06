@@ -11,17 +11,17 @@ set(DELAUNAY_VISUAL_SOURCES src/delaunay.h src/delaunay.cpp)
 add_library(delaunay_visual ${DELAUNAY_VISUAL_SOURCES})
 
 # gl3w: OpenGL context loader
-include_directories(external/gl3w/include)
-set(GL3W_SOURCES external/gl3w/src/gl3w.c)
+include_directories(extern/gl3w/include)
+set(GL3W_SOURCES extern/gl3w/src/gl3w.c)
 add_library(gl3w ${GL3W_SOURCES})
 
 # imgui: GUI library
-include_directories(external/imgui external/imgui/examples)
-set(IMGUI_SOURCES external/imgui/examples/imgui_impl_glfw.cpp external/imgui/examples/imgui_impl_opengl3.cpp external/imgui/imgui.cpp external/imgui/imgui_demo.cpp external/imgui/imgui_draw.cpp external/imgui/imgui_widgets.cpp)
+include_directories(extern/imgui extern/imgui/examples)
+set(IMGUI_SOURCES extern/imgui/examples/imgui_impl_glfw.cpp extern/imgui/examples/imgui_impl_opengl3.cpp extern/imgui/imgui.cpp extern/imgui/imgui_demo.cpp extern/imgui/imgui_draw.cpp extern/imgui/imgui_widgets.cpp)
 add_library(imgui ${IMGUI_SOURCES})
 target_link_libraries(imgui PUBLIC glfw gl3w)
 
 # main app
-add_executable(main src/main.cpp ../external/imgui/imgui.h)
+add_executable(main src/main.cpp ../extern/imgui/imgui.h)
 target_link_libraries(main PRIVATE delaunay_visual glfw3 gl3w imgui)
 add_link_options(main -lGLEW)
