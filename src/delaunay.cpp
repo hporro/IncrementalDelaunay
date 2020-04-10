@@ -3,110 +3,92 @@
 #include "delaunay.h"
 
 //VERTEX IMPL
-Vertex::Vertex(Vec2 v, Triangle* t) : pos(v), triangle(t){}
+Vertex::Vertex(Vec2 v, int t) : pos(v), tri_index(t){}
+Vertex::Vertex(Vec2 v) : pos(v){}
 Vertex::Vertex(){}
 void Vertex::print(){
     std::cout << pos.x << " " << pos.y << std::endl;
 }
 
 //TRIANGLE IMPL
-Triangle::Triangle(Vec2 p1, Vec2 p2, Vec2 p3){
-    v1 = new Vertex();
-    v2 = new Vertex();
-    v3 = new Vertex();
-
-    v1->pos = p1;
-    v2->pos = p2;
-    v3->pos = p3;
-
-    v1->triangle = &(*this);
-    v2->triangle = &(*this);
-    v3->triangle = &(*this);
-}
-Triangle::Triangle(Vertex* v1,Vertex* v2,Vertex* v3,Triangle* t1,Triangle* t2,Triangle* t3):v1(v1),v2(v2),v3(v3),t1(t1),t2(t2),t3(t3){}
+Triangle::Triangle(int v0,int v1,int v2,int t0,int t1,int t2):v0(v0),v1(v1),v2(v2),t0(t0),t1(t1),t2(t2){}
 Triangle::Triangle(){}
-void Triangle::print(){
-    std::cout << "v1: "; v1->print();
-    std::cout << "v2: "; v2->print();
-    std::cout << "v3: "; v3->print();
+
+float crossa(Vec2 a, Vec2 b){
+    return a.x*b.y-a.y*b.x;
 }
 
-bool Triangle::isInside(Vec2 p){
-    Vec2 p1 = v1->pos;
-    Vec2 p2 = v2->pos;
-    Vec2 p3 = v3->pos;
-
-    // b-a goes from a to b
-
-    if(true){
-        return true;
-    }
-
-    return false;
+bool isLeft(Vec2 a, Vec2 b){
+    return crossa(a,b)>0;
 }
 
 //TRIANGULATION IMPL
-Triangulation::Triangulation(std::vector<Vec2> points, Triangle* t) : points(points) {
-    t->t1 = nullptr;
-    t->t2 = nullptr;
-    t->t3 = nullptr;
+bool Triangulation::isInside(int t, Vec2 p){
+    Vec2 p1 = vertices[triangles[t].v0].pos;
+    Vec2 p2 = vertices[triangles[t].v1].pos;
+    Vec2 p3 = vertices[triangles[t].v2].pos;
+    // b-a goes from a to b
+    if(isLeft(p2-p1,p-p1) && isLeft(p3-p2,p-p2) && isLeft(p1-p3,p-p3)) return true;
+    return false;
+}
+Triangulation::Triangulation(std::vector<Vec2> points, int numP, Vec2 p0, Vec2 p1, Vec2 p2) {
+    //TODO: Assert T(p1, p2, p3) is ccw
 
-    triangles.push_back(*t);
+    vertices = std::vector<Vertex>(numP+3); // num of vertices
+    triangles = std::vector<Triangle>(numP*2+1); // 2(n+3) - 2 - 3 = 2n+1 // num of faces
+
+    vertices[0] = Vertex(p0);
+    vertices[1] = Vertex(p1);
+    vertices[2] = Vertex(p2);
+    triangles[0] = Triangle(0,1,2,-1,-1,-1);
+
+    vcount = 3;
+    tcount = 1;
 
     for(int i=0;i<points.size();i++){
         addPoint(points[i]);
     }
 }
-void Triangulation::addPointInside(Vec2 &p, Triangle* t){
-    vertices.push_back(Vertex(p,t));
+void Triangulation::addPointInside(Vec2 v, int tri_index){
+    int f = tri_index;
+    int f1 = tcount++;
+    int f2 = tcount++;
+
+    int p = vcount++;
+
+    int p0 = triangles[f].v0;
+    int p1 = triangles[f].v1;
+    int p2 = triangles[f].v2;
+    int t0 = triangles[f].t0;
+    int t1 = triangles[f].t1;
+    int t2 = triangles[f].t2;
+
+    triangles[f1] = Triangle(p,p2,p0,t1,f2,f);
+    triangles[f2] = Triangle(p,p0,p1,t2,f,f1);
     
-    Vertex *v = &vertices[vertices.size()-1];
-    Vertex *v1 = t->v1;
-    Vertex *v2 = t->v2;
-    Vertex *v3 = t->v3;
+    triangles[f].v0 = p;
+    triangles[f].t1 = f1;
+    triangles[f].t2 = f2;
 
-    Triangle *t1 = t->t1;
-    Triangle *t2 = t->t2;
-    Triangle *t3 = t->t3;
-
-    triangles.push_back(Triangle());
-    triangles.push_back(Triangle());
-    Triangle* f3 = &triangles[triangles.size()-1];
-    Triangle* f2 = &triangles[triangles.size()-2];
-
-    t->t2 = f2;
-    t->t3 = f3;
-    t->v3 = v;
-
-    f2->t1 = t2;
-    f2->t2 = f3;
-    f2->t3 = t;
-    f2->v1 = v2;
-    f2->v2 = v3;
-    f2->v3 = v;
-
-    f3->t1 = t3;
-    f3->t2 = t;
-    f3->t3 = f2;
-    f3->v1 = v3;
-    f3->v2 = v1;
-    f3->v3 = v;
+    vertices[p] = Vertex(v);
 }
-
 void Triangulation::addPoint(Vec2 p){
-    Triangle* t = nullptr;
-    for(int i=0;i<triangles.size();i++){
-        if(triangles[i].isInside(p)){
-            t = &triangles.at(i);
+    int tri_index = -1;
+    for(int i=0;i<tcount;i++){
+        if(isInside(i,p)){
+            tri_index = i;
             break;
         }
     }
-    if(t!=nullptr){
-        addPointInside(p,t);
+    if(tri_index!=-1){
+        return addPointInside(p,tri_index);
     }
 }
 void Triangulation::print(){
-    for(int i=0;i<triangles.size();i++){
-        std::cout << "Triangle " << i << ":" << std::endl; triangles[i].print();
+    for(int i=0;i<tcount;i++){
+        std::cout << "Triangle " << i << ":\n";
+        std::cout << "P0: " << vertices[triangles[i].v0].pos.x << " " << vertices[triangles[i].v0].pos.y << std::endl;
+        std::cout << "P1: " << vertices[triangles[i].v1].pos.x << " " << vertices[triangles[i].v1].pos.y << std::endl;
+        std::cout << "P2: " << vertices[triangles[i].v2].pos.x << " " << vertices[triangles[i].v2].pos.y << std::endl;
     }
 }

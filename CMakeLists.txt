@@ -27,14 +27,14 @@ target_link_libraries(DelaunayGUI PRIVATE imgui)
 target_link_libraries(DelaunayGUI PUBLIC glfw gl3w)
 
 # Delaunay Data Structure manipulation and drawing files
-set(DELAUNAY_VISUAL_SOURCES src/delaunay.h src/delaunay.cpp src/point_generator.h src/point_generator.cpp src/constants.h)
+set(DELAUNAY_VISUAL_SOURCES src/draw_delaunay.h src/delaunay.h src/delaunay.cpp src/point_generator.h src/point_generator.cpp src/constants.h)
 add_library(delaunay_visual ${DELAUNAY_VISUAL_SOURCES})
-target_link_libraries(delaunay_visual PUBLIC glm)
+target_link_libraries(delaunay_visual PUBLIC glm gl3w)
 
 # Main app: All together
 add_executable(main src/main.cpp ../extern/imgui/imgui.h)
 target_link_libraries(main PRIVATE delaunay_visual glfw3 gl3w DelaunayGUI)
 
 # Executable to try out stuff, it's not important
-add_executable(playground playground.cpp)
-target_link_libraries(playground PRIVATE delaunay_visual glm)
+add_executable(playground playground.cpp src/delaunay.h src/delaunay.cpp src/point_generator.h src/point_generator.cpp src/constants.h)
+target_link_libraries(playground PRIVATE glm)

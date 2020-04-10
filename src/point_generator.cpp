@@ -23,7 +23,7 @@ namespace POINT_GENERATOR {
     }
 
     Vec2 gen_point(float a, float b, float c, Vec2 p0, Vec2 p1, Vec2 p2){
-        assert(a+b+c-1<EPS);
+        assert(a+b+c-1.0<EPS);
         return Vec2(p0.x*a+p1.x*b+p2.x*c,p0.y*a+p1.y*b+p2.y*c);
     }
 
@@ -33,9 +33,10 @@ namespace POINT_GENERATOR {
         std::vector<Vec2> points(n);
         for(auto i=0;i<n;i++){
             float a = dist01(rng);
-            float b = max<float>(0.0,abs(dist01(rng)-a));
+            float b = max<float>(0.0,dist01(rng)-a);
             float c = 1.0-a-b;
             points[i] = gen_point(a,b,c,p0,p1,p2);
+            if(points[i].x==points[i].y)i--;
         }
         return points;
     }
