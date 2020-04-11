@@ -27,7 +27,7 @@ target_link_libraries(DelaunayGUI PRIVATE imgui)
 target_link_libraries(DelaunayGUI PUBLIC glfw gl3w)
 
 # Delaunay Data Structure manipulation and drawing files
-set(DELAUNAY_VISUAL_SOURCES src/draw_delaunay.h src/delaunay.h src/delaunay.cpp src/point_generator.h src/point_generator.cpp src/constants.h)
+set(DELAUNAY_VISUAL_SOURCES src/draw_triangulation.h src/delaunay.h src/delaunay.cpp src/point_generator.h src/point_generator.cpp src/constants.h)
 add_library(delaunay_visual ${DELAUNAY_VISUAL_SOURCES})
 target_link_libraries(delaunay_visual PUBLIC glm gl3w)
 

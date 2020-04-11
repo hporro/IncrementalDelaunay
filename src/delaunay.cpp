@@ -92,3 +92,11 @@ void Triangulation::print(){
         std::cout << "P2: " << vertices[triangles[i].v2].pos.x << " " << vertices[triangles[i].v2].pos.y << std::endl;
     }
 }
+bool Triangulation::isCCW(int f){
+    Vec2 p0 = vertices[triangles[f].v0].pos;
+    Vec2 p1 = vertices[triangles[f].v1].pos;
+    Vec2 p2 = vertices[triangles[f].v1].pos;
+    
+    if(isLeft(p1-p0,p2-p0) && isLeft(p2-p1,p0-p1) && isLeft(p0-p2,p1-p2)) return true;
+    return false;
+}

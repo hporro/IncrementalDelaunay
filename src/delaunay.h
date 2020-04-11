@@ -41,6 +41,7 @@ public:
 private:
     void addPoint(Vec2 point);
     void addPointInside(Vec2 point,int);
+    bool isCCW(int f); // check if a triangle, in the position f of the triangles array, is ccw
 };
 
 #endif

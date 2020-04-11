@@ -6,7 +6,7 @@
 #include "GUI/gui.h"
 #include "point_generator.h"
 #include "delaunay.h"
-#include "draw_delaunay.h"
+#include "draw_triangulation.h"
 
 static void glfw_error_callback(int error, const char* description){
     std::cerr << "Glfw Error "<< error << ": " << description << std::endl;
@@ -44,17 +44,15 @@ int main(int argn, char** argv){
     dgui->init(window);
 
     //gen points
-    Vec2 p0 = Vec2(-1.0,-1.0);
-    Vec2 p1 = Vec2(1.0,-1.0);
-    Vec2 p2 = Vec2(0.0,1.0);
-    std::vector<Vec2> points = POINT_GENERATOR::gen_points_triangle(20,p0,p1,p2);
-    //POINT_GENERATOR::print_points(points);
+    Vec2 p0 = Vec2(-0.7,-0.7);
+    Vec2 p1 = Vec2(0.7,-0.7);
+    Vec2 p2 = Vec2(0.0,0.7);
+    std::vector<Vec2> points = POINT_GENERATOR::gen_points_triangle(1000,p0,p1,p2);
 
     //gen triangulation
     Triangulation tri = Triangulation(points,points.size(),p0,p1,p2);
-    tri.print();
-
     TriangulationDrawer td(&tri);
+    td.setColor(dgui->state->triangulation_color);
 
     // Main loop
     while (!glfwWindowShouldClose(window)){
@@ -62,8 +60,9 @@ int main(int argn, char** argv){
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        glClearColor(gstate->clear_color.x, gstate->clear_color.y, gstate->clear_color.z, gstate->clear_color.w);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        td.setColor(dgui->state->triangulation_color);
         td.draw();
         dgui->draw();
         dgui->render();
