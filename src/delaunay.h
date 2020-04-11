@@ -33,14 +33,18 @@ class Triangulation {
 public:
     Triangulation(std::vector<Vec2> points, int numP, Vec2 p1, Vec2 p2, Vec2 p3); //makes a triangulation out of a list of points and a triangle. numP is to allocate memory for numP vertices
     bool isInside(int t, Vec2); //checks if a Vec2 is inside the triangle in the index t
+    bool isInEdge(int t, Vec2); //checks if a Vec2 is in a edge of a triangle
     void print(); // prints the triangulation to standard output
     std::vector<Vertex> vertices;
     std::vector<Triangle> triangles;
     int vcount = 0;
     int tcount = 0;
+    int vecount = 0;
+    int veocount = 0;
 private:
     void addPoint(Vec2 point);
     void addPointInside(Vec2 point,int);
+    void addPointInEdge(Vec2 point, int t1, int t2);
     bool isCCW(int f); // check if a triangle, in the position f of the triangles array, is ccw
 };
 

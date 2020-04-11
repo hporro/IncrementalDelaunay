@@ -4,6 +4,7 @@
 struct GUIState {
     bool optionsActive = true;
     float triangulation_color[3] = {1.0f, 0.5f, 0.2f};
+    double xpos, ypos;
 };
 
 class DelaunayGUI {

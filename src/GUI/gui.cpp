@@ -40,6 +40,10 @@ void DelaunayGUI::draw(){
             ImGui::ColorEdit3("Color",state->triangulation_color);
             ImGui::End();
         }
+        {
+            ImGui::Begin("Info",&state->optionsActive);
+            ImGui::End();
+        }
         ImGui::Render();
 }
 

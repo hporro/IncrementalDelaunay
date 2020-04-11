@@ -36,7 +36,6 @@ namespace POINT_GENERATOR {
             float b = max<float>(0.0,dist01(rng)-a);
             float c = 1.0-a-b;
             points[i] = gen_point(a,b,c,p0,p1,p2);
-            if(points[i].x==points[i].y)i--;
         }
         return points;
     }

@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "delaunay.h"
+#include "constants.h"
 
 //VERTEX IMPL
 Vertex::Vertex(Vec2 v, int t) : pos(v), tri_index(t){}
@@ -19,7 +20,11 @@ float crossa(Vec2 a, Vec2 b){
 }
 
 bool isLeft(Vec2 a, Vec2 b){
-    return crossa(a,b)>0;
+    return crossa(a,b) > 0;
+}
+
+bool mightBeLeft(Vec2 a, Vec2 b){
+    return crossa(a,b) >= 0;
 }
 
 //TRIANGULATION IMPL
@@ -31,6 +36,17 @@ bool Triangulation::isInside(int t, Vec2 p){
     if(isLeft(p2-p1,p-p1) && isLeft(p3-p2,p-p2) && isLeft(p1-p3,p-p3)) return true;
     return false;
 }
+
+bool Triangulation::isInEdge(int t, Vec2 p){
+    if(isInside(t,p))return false; // in our context this will never happend, so we can skip this check
+    Vec2 p1 = vertices[triangles[t].v0].pos;
+    Vec2 p2 = vertices[triangles[t].v1].pos;
+    Vec2 p3 = vertices[triangles[t].v2].pos;
+    // b-a goes from a to b
+    if(mightBeLeft(p2-p1,p-p1) && mightBeLeft(p3-p2,p-p2) && mightBeLeft(p1-p3,p-p3)) return true;
+    return false;
+}
+
 Triangulation::Triangulation(std::vector<Vec2> points, int numP, Vec2 p0, Vec2 p1, Vec2 p2) {
     //TODO: Assert T(p1, p2, p3) is ccw
 
@@ -81,8 +97,32 @@ void Triangulation::addPoint(Vec2 p){
         }
     }
     if(tri_index!=-1){
-        return addPointInside(p,tri_index);
+        addPointInside(p,tri_index);
+        return;
     }
+    int t1=-1,t2=-1;
+    for(int i=0;i<tcount;i++){
+        if(t1 == -1 && isInEdge(i,p)){
+            t1 = i;
+            continue;
+        }
+        if(t2 == -1 && isInEdge(i,p)){
+            t2 = i;
+            break;
+        }
+    }
+    if(t1!=-1 && t2!=-1){
+        addPointInEdge(p,t1,t2);
+    }
+    else if(t1!=-1 && t2==-1){
+        veocount++;
+    }
+    else{
+        //std::cout << p.x << " " << p.y << std::endl;
+    }
+}
+void Triangulation::addPointInEdge(Vec2 p, int t1, int t2){
+    vecount++;
 }
 void Triangulation::print(){
     for(int i=0;i<tcount;i++){
