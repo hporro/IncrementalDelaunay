@@ -3,18 +3,7 @@
 #include "delaunay.h"
 #include "constants.h"
 
-//VERTEX IMPL
-Vertex::Vertex(Vec2 v, int t) : pos(v), tri_index(t){}
-Vertex::Vertex(Vec2 v) : pos(v){}
-Vertex::Vertex(){}
-void Vertex::print(){
-    std::cout << pos.x << " " << pos.y << std::endl;
-}
-
-//TRIANGLE IMPL
-Triangle::Triangle(int v0,int v1,int v2,int t0,int t1,int t2):v0(v0),v1(v1),v2(v2),t0(t0),t1(t1),t2(t2){}
-Triangle::Triangle(){}
-
+//HELPER FUNCTIONS
 float crossa(Vec2 a, Vec2 b){
     return a.x*b.y-a.y*b.x;
 }
@@ -30,6 +19,18 @@ bool isRight(Vec2 a, Vec2 b){
 bool mightBeLeft(Vec2 a, Vec2 b){
     return crossa(a,b) >= -EPS;
 }
+
+//VERTEX IMPL
+Vertex::Vertex(Vec2 v, int t) : pos(v), tri_index(t){}
+Vertex::Vertex(Vec2 v) : pos(v){}
+Vertex::Vertex(){}
+void Vertex::print(){
+    std::cout << pos.x << " " << pos.y << std::endl;
+}
+
+//TRIANGLE IMPL
+Triangle::Triangle(int v0,int v1,int v2,int t0,int t1,int t2):v0(v0),v1(v1),v2(v2),t0(t0),t1(t1),t2(t2){}
+Triangle::Triangle(){}
 
 //TRIANGULATION IMPL
 bool Triangulation::isInside(int t, Vec2 p){

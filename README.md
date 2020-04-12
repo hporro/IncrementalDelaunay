@@ -2,6 +2,10 @@
 
 Incremental Delaunay triangulation with visualization. It was implemented using C++, CMake, imgui, glm, gl3w and glfw.
 
+## Screenshots
+
+![Screenshot](screenshots/t1.jpg)
+
 ## Getting Started
 
 These instructions will get you a copy of the homework up and running on your local machine.
@@ -28,7 +32,9 @@ cmake ..
 make
 ```
 
-Then you can run the main application running the main executable file:
+### Running
+
+Then you can run the main application running the main executable file, in the build directory:
 
 ```
 ./main
