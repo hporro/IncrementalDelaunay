@@ -4,44 +4,42 @@ Incremental Delaunay triangulation with visualization. It was implemented using 
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+These instructions will get you a copy of the homework up and running on your local machine.
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
+To run my homework, you will need to have installed glfw library in your computer. If you have a ubuntu distro, oyu only need to run:
 
 ```
-Give examples
+sudo apt-get install libglfw3
+sudo apt-get install libglfw3-dev
 ```
+
+Other than that, you only need a graphics card capable to run OpenGL 3.2 core profile, CMake (version 3.1 or more) and a C++ compiler capable to compile C++11.
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
 ```
-Give the example
-```
-
-And repeat
-
-```
-until finished
+git clone https://github.com/hporro/Tarea1Mallas
+cd Tarea1Mallas
+mkdir build
+cd build
+cmake ..
+make
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
+Then you can run the main application running the main executable file:
+
+```
+./main
+```
 
 ## Running the tests
 
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
+To run the tests, you have to run the tests executable:
 
 ```
-Give an example
+./tests
 ```
 
 ## Built With
@@ -50,6 +48,7 @@ Give an example
 * [gl3w](https://github.com/skaslev/gl3w) - OpenGL context loader library
 * [imgui](https://github.com/ocornut/imgui) - GUI library
 * [GLFW](https://github.com/glfw/glfw) - Window manager library for OpenGL context
+* [tinytest](https://github.com/joewalnes/tinytest) - Simple header only test framework
 
 ## Authors
 
@@ -62,3 +61,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Acknowledgments
 
 * Thanks to https://www.gitignore.io/ for the generated .gitignore.
+* Thanks to [JoeyDeVries](https://learnopengl.com/Getting-started/Hello-Triangle) for the OpenGL tutorial.
