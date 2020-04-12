@@ -39,12 +39,16 @@ public:
     std::vector<Triangle> triangles;
     int vcount = 0;
     int tcount = 0;
-private:
     void addPoint(Vec2 point);
     void addPointInside(Vec2 point,int);
     void addPointInEdge(Vec2 point, int t1, int t2);
     void addPointInEdge(Vec2 point, int t);
     bool isCCW(int f); // check if a triangle, in the position f of the triangles array, is ccw
 };
+
+float crossa(Vec2 a, Vec2 b);
+bool isLeft(Vec2 a, Vec2 b);
+bool isRight(Vec2 a, Vec2 b);
+bool mightBeLeft(Vec2 a, Vec2 b);
 
 #endif

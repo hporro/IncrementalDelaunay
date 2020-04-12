@@ -32,8 +32,12 @@ add_library(delaunay_visual ${DELAUNAY_VISUAL_SOURCES})
 target_link_libraries(delaunay_visual PUBLIC glm gl3w)
 
 # Main app: All together
-add_executable(main src/main.cpp ../extern/imgui/imgui.h)
+add_executable(main src/main.cpp)
 target_link_libraries(main PRIVATE delaunay_visual glfw3 gl3w DelaunayGUI)
+
+# tests
+add_executable(tests test/tests.cpp)
+target_link_libraries(tests PRIVATE glm delaunay_visual glfw gl3w)
 
 # Executable to try out stuff, it's not important
 add_executable(playground playground.cpp src/delaunay.h src/delaunay.cpp src/point_generator.h src/point_generator.cpp src/constants.h)
