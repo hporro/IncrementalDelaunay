@@ -1,6 +1,6 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define EPS 0.000000001
+#define EPS 0.00001
 
 #endif

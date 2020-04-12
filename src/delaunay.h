@@ -39,12 +39,11 @@ public:
     std::vector<Triangle> triangles;
     int vcount = 0;
     int tcount = 0;
-    int vecount = 0;
-    int veocount = 0;
 private:
     void addPoint(Vec2 point);
     void addPointInside(Vec2 point,int);
     void addPointInEdge(Vec2 point, int t1, int t2);
+    void addPointInEdge(Vec2 point, int t);
     bool isCCW(int f); // check if a triangle, in the position f of the triangles array, is ccw
 };
 

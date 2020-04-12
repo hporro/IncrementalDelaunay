@@ -35,8 +35,8 @@ void DelaunayGUI::draw(){
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         {
-            ImGui::Begin("Opciones",&state->optionsActive,ImGuiWindowFlags_MenuBar);
-            ImGui::Text("Opciones de la triangulacion");
+            ImGui::Begin("Options",&state->optionsActive,ImGuiWindowFlags_MenuBar);
+            ImGui::Text("Triangulation options");
             ImGui::ColorEdit3("Color",state->triangulation_color);
             ImGui::End();
         }

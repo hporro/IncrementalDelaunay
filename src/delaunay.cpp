@@ -20,11 +20,15 @@ float crossa(Vec2 a, Vec2 b){
 }
 
 bool isLeft(Vec2 a, Vec2 b){
-    return crossa(a,b) > 0;
+    return crossa(a,b) > -EPS;
+}
+
+bool isRight(Vec2 a, Vec2 b){
+    return crossa(a,b) < EPS;
 }
 
 bool mightBeLeft(Vec2 a, Vec2 b){
-    return crossa(a,b) >= 0;
+    return crossa(a,b) >= -EPS;
 }
 
 //TRIANGULATION IMPL
@@ -43,13 +47,15 @@ bool Triangulation::isInEdge(int t, Vec2 p){
     Vec2 p2 = vertices[triangles[t].v1].pos;
     Vec2 p3 = vertices[triangles[t].v2].pos;
     // b-a goes from a to b
-    if(mightBeLeft(p2-p1,p-p1) && mightBeLeft(p3-p2,p-p2) && mightBeLeft(p1-p3,p-p3)) return true;
+    Vec2 a1 = p1-p2; Vec2 b1 = p-p2;
+    Vec2 a2 = p2-p3; Vec2 b2 = p-p3;
+    Vec2 a3 = p3-p1; Vec2 b3 = p-p1;
+    if(mightBeLeft(p2-p1,p-p1) && mightBeLeft(p3-p2,p-p2) && mightBeLeft(p1-p3,p-p3))
+    if( (a1.x>=b1.x && a1.y>=b1.y) || (a2.x>=b2.x && a2.y>=b2.y) || (a3.x>=b3.x && a3.y>=b3.y) ) return true;
     return false;
 }
 
 Triangulation::Triangulation(std::vector<Vec2> points, int numP, Vec2 p0, Vec2 p1, Vec2 p2) {
-    //TODO: Assert T(p1, p2, p3) is ccw
-
     vertices = std::vector<Vertex>(numP+3); // num of vertices
     triangles = std::vector<Triangle>(numP*2+1); // 2(n+3) - 2 - 3 = 2n+1 // num of faces
 
@@ -57,6 +63,7 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP, Vec2 p0, Vec2 p
     vertices[1] = Vertex(p1);
     vertices[2] = Vertex(p2);
     triangles[0] = Triangle(0,1,2,-1,-1,-1);
+    assert(isCCW(0));
 
     vcount = 3;
     tcount = 1;
@@ -66,6 +73,7 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP, Vec2 p0, Vec2 p
     }
 }
 void Triangulation::addPointInside(Vec2 v, int tri_index){
+    assert(isCCW(tri_index));
     int f = tri_index;
     int f1 = tcount++;
     int f2 = tcount++;
@@ -102,27 +110,96 @@ void Triangulation::addPoint(Vec2 p){
     }
     int t1=-1,t2=-1;
     for(int i=0;i<tcount;i++){
-        if(t1 == -1 && isInEdge(i,p)){
+        if((t1 == -1) && isInEdge(i,p)){
             t1 = i;
             continue;
         }
-        if(t2 == -1 && isInEdge(i,p)){
+        if((t2 == -1) && isInEdge(i,p)){
             t2 = i;
-            break;
         }
     }
-    if(t1!=-1 && t2!=-1){
+    if((t1!=-1) && (t2!=-1)){
         addPointInEdge(p,t1,t2);
+        return;
     }
-    else if(t1!=-1 && t2==-1){
-        veocount++;
+    else if((t1!=-1) && (t2==-1)){
+        addPointInEdge(p,t1);
     }
     else{
         //std::cout << p.x << " " << p.y << std::endl;
     }
 }
-void Triangulation::addPointInEdge(Vec2 p, int t1, int t2){
-    vecount++;
+void Triangulation::addPointInEdge(Vec2 v, int t1, int t2){
+    assert(isCCW(t1)&&isCCW(t2));
+    int f10,f20,f11,f21,f12,f22,p10,p20,p11,p21,p12,p22;
+    
+    p10 = triangles[t1].v0;
+    p11 = triangles[t1].v1;
+    p12 = triangles[t1].v2;
+    f10 = triangles[t1].t0;
+    f11 = triangles[t1].t1;
+    f12 = triangles[t1].t2;
+    
+    p20 = triangles[t2].v0;
+    p21 = triangles[t2].v1;
+    p22 = triangles[t2].v2;
+    f20 = triangles[t2].t0;
+    f21 = triangles[t2].t1;
+    f22 = triangles[t2].t2;
+
+    int t3 = tcount++;
+    int t4 = tcount++;
+    int p = vcount++;
+    vertices[p] = Vertex(v);
+
+    if(f10 == t2){
+        triangles[t3] = Triangle(p,p12,p10,f11,t1,t4);
+        triangles[t1].v2 = p;
+        triangles[t1].t1 = t3;
+    }
+    else if(f11 == t2){
+        triangles[t3] = Triangle(p,p10,p11,f12,t1,t4);
+        triangles[t1].v0 = p;
+        triangles[t1].t2 = t3;
+    }
+    else if(f12 == t2){
+        triangles[t3] = Triangle(p,p11,p12,f10,t1,t4);
+        triangles[t1].v1 = p;
+        triangles[t1].t0 = t3;
+    }
+    if(f20 == t1){
+        triangles[t4] = Triangle(p,p20,p21,f22,t3,t2);
+        triangles[t2].v1 = p;
+        triangles[t2].t2 = t4;
+    }
+    else if(f21 == t1){
+        triangles[t4] = Triangle(p,p21,p22,f20,t3,t2);
+        triangles[t2].v2 = p;
+        triangles[t2].t0 = t4;
+    }
+    else if(f22 == t1){
+        triangles[t4] = Triangle(p,p22,p20,f21,t3,t2);
+        triangles[t2].v0 = p;
+        triangles[t2].t1 = t4;
+    }
+}
+void Triangulation::addPointInEdge(Vec2 v, int t){
+    assert(isCCW(t));
+    int f0 = triangles[t].t0;
+    int f1 = triangles[t].t1;
+    int f2 = triangles[t].t2;
+
+    int p0 = triangles[t].v0;
+    int p1 = triangles[t].v1;
+    int p2 = triangles[t].v2;
+    
+    int t1 = tcount++;
+    int p = vcount++;
+
+    vertices[p] = Vertex(v);
+    triangles[t1] = Triangle(p0,p1,p,t,f1,f2);
+    triangles[t].v0 = p;
+    triangles[t].t2 = t1;
 }
 void Triangulation::print(){
     for(int i=0;i<tcount;i++){
@@ -135,8 +212,9 @@ void Triangulation::print(){
 bool Triangulation::isCCW(int f){
     Vec2 p0 = vertices[triangles[f].v0].pos;
     Vec2 p1 = vertices[triangles[f].v1].pos;
-    Vec2 p2 = vertices[triangles[f].v1].pos;
+    Vec2 p2 = vertices[triangles[f].v2].pos;
     
-    if(isLeft(p1-p0,p2-p0) && isLeft(p2-p1,p0-p1) && isLeft(p0-p2,p1-p2)) return true;
+    if(crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0)>-EPS) return true;
+    
     return false;
 }
