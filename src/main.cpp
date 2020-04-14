@@ -47,11 +47,11 @@ int main(int argn, char** argv){
     Vec2 p0 = Vec2(-0.9,-0.9);
     Vec2 p1 = Vec2(0.9,-0.9);
     Vec2 p2 = Vec2(0.0,0.9);
-    std::vector<Vec2> points = POINT_GENERATOR::gen_points_triangle(500,p0,p1,p2);
+    std::vector<Vec2> points = POINT_GENERATOR::gen_points_triangle(10,p0,p1,p2);
 
     //gen triangulation
     Triangulation tri = Triangulation(points,points.size(),p0,p1,p2);
-    //std::cout << tri.vcount << ": " << tri.vcount << std::endl;
+    //std::cout << tri.incount << " " << tri.edgecount << " " << tri.oedgecount << std::endl;
     TriangulationDrawer td(&tri);
     td.setColor(dgui->state->triangulation_color);
 

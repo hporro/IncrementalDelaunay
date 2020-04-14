@@ -73,8 +73,24 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP, Vec2 p0, Vec2 p
         addPoint(points[i]);
     }
 }
+bool Triangulation::integrity(int t){
+    int t0 = triangles[t].t0;
+    int t1 = triangles[t].t1;
+    int t2 = triangles[t].t2;
+
+    bool a=true,b=true,c=true;
+
+    if(t0!=-1) a = (t==triangles[t0].t0) || (t==triangles[t0].t1) || (t==triangles[t0].t2);
+    if(t1!=-1) b = (t==triangles[t1].t0) || (t==triangles[t1].t1) || (t==triangles[t1].t2);
+    if(t2!=-1) c = (t==triangles[t2].t0) || (t==triangles[t2].t1) || (t==triangles[t2].t2);
+
+    return a&&b&&c;
+}
 void Triangulation::addPointInside(Vec2 v, int tri_index){
     assert(isCCW(tri_index));
+    assert(isInside(tri_index,v));
+    assert(integrity(tri_index));
+
     int f = tri_index;
     int f1 = tcount++;
     int f2 = tcount++;
@@ -91,6 +107,24 @@ void Triangulation::addPointInside(Vec2 v, int tri_index){
     triangles[f1] = Triangle(p,p2,p0,t1,f2,f);
     triangles[f2] = Triangle(p,p0,p1,t2,f,f1);
     
+    if(t1!=-1){
+        if(triangles[t1].t0==f)
+        triangles[t1].t0 = f1;
+        if(triangles[t1].t1==f)
+        triangles[t1].t1 = f1;
+        if(triangles[t1].t2==f)
+        triangles[t1].t2 = f1;
+    }
+
+    if(t2!=-1){
+        if(triangles[t2].t0==f)
+        triangles[t2].t0 = f2;
+        if(triangles[t2].t1==f)
+        triangles[t2].t1 = f2;
+        if(triangles[t2].t2==f)
+        triangles[t2].t2 = f2;
+    }
+
     triangles[f].v0 = p;
     triangles[f].t1 = f1;
     triangles[f].t2 = f2;
@@ -106,6 +140,7 @@ void Triangulation::addPoint(Vec2 p){
         }
     }
     if(tri_index!=-1){
+        this->incount++;
         addPointInside(p,tri_index);
         return;
     }
@@ -120,18 +155,19 @@ void Triangulation::addPoint(Vec2 p){
         }
     }
     if((t1!=-1) && (t2!=-1)){
+        this->edgecount++;
         addPointInEdge(p,t1,t2);
         return;
     }
     else if((t1!=-1) && (t2==-1)){
+        this->oedgecount++;
         addPointInEdge(p,t1);
-    }
-    else{
-        //std::cout << p.x << " " << p.y << std::endl;
     }
 }
 void Triangulation::addPointInEdge(Vec2 v, int t1, int t2){
     assert(isCCW(t1)&&isCCW(t2));
+    assert(isInEdge(t1,v)&&isInEdge(t2,v));
+    assert(integrity(t1)&&integrity(t2));
     int f10,f20,f11,f21,f12,f22,p10,p20,p11,p21,p12,p22;
     
     p10 = triangles[t1].v0;
@@ -186,6 +222,8 @@ void Triangulation::addPointInEdge(Vec2 v, int t1, int t2){
 }
 void Triangulation::addPointInEdge(Vec2 v, int t){
     assert(isCCW(t));
+    assert(isInEdge(t,v));
+    assert(integrity(t));
     int f0 = triangles[t].t0;
     int f1 = triangles[t].t1;
     int f2 = triangles[t].t2;
@@ -210,6 +248,12 @@ void Triangulation::print(){
         std::cout << "P2: " << vertices[triangles[i].v2].pos.x << " " << vertices[triangles[i].v2].pos.y << std::endl;
     }
 }
+void Triangulation::print_ind(){
+    for(int i=0;i<tcount;i++){
+        std::cout << "Triangle " << i << ": ";
+        std::cout << triangles[i].t0 << " " << triangles[i].t1 << " " << triangles[i].t2 << std::endl;
+    }
+}
 bool Triangulation::isCCW(int f){
     Vec2 p0 = vertices[triangles[f].v0].pos;
     Vec2 p1 = vertices[triangles[f].v1].pos;
@@ -218,4 +262,45 @@ bool Triangulation::isCCW(int f){
     if(crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0)>-EPS) return true;
     
     return false;
+}
+void Triangulation::flip(int t1, int t2){
+    int p1,p2,pa,pb,ta1,tb1,ta2,tb2;
+    if(triangles[t1].t0==t2){
+        p1 = triangles[t1].v0;
+        pb = triangles[t1].v1;
+        pa = triangles[t1].v2;
+        tb1 = triangles[t1].t1;
+        ta1 = triangles[t1].t2;
+    }
+    if(triangles[t1].t1==t2){
+        p1 = triangles[t1].v1;
+        pb = triangles[t1].v2;
+        pa = triangles[t1].v0;
+        tb1 = triangles[t1].t2;
+        ta1 = triangles[t1].t0;
+    }
+    if(triangles[t1].t2==t2){
+        p1 = triangles[t1].v2;
+        pb = triangles[t1].v0;
+        pa = triangles[t1].v1;
+        tb1 = triangles[t1].t0;
+        ta1 = triangles[t1].t1;
+    }
+    if(triangles[t2].t0==t1){
+        p2 = triangles[t2].v0;
+        ta2 = triangles[t1].t1;
+        tb2 = triangles[t1].t2;
+    }
+    if(triangles[t2].t1==t1){
+        p2 = triangles[t2].v1;
+        ta2 = triangles[t1].t2;
+        tb2 = triangles[t1].t0;
+    }
+    if(triangles[t2].t2==t1){
+        p2 = triangles[t2].v2;
+        ta2 = triangles[t1].t0;
+        tb2 = triangles[t1].t1;
+    }
+    triangles[t1] = Triangle(pb,p2,p1,t2,ta1,ta2);
+    triangles[t2] = Triangle(pa,p1,p2,t1,tb2,tb1);
 }
