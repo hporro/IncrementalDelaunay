@@ -25,13 +25,14 @@ class Triangle {
 public:
     Triangle(int v1,int v2,int v3,int t1,int t2,int t3);
     Triangle();
-    int v0,v1,v2; // indices to the vertices vector
-    int t0,t1,t2; // indices to the triangles vector
+    int v[3]; // indices to the vertices vector
+    int t[3]; // indices to the triangles vector
 };
 
 class Triangulation {
 public:
     Triangulation(std::vector<Vec2> points, int numP, Vec2 p1, Vec2 p2, Vec2 p3); //makes a triangulation out of a list of points and a triangle. numP is to allocate memory for numP vertices
+    Triangulation(){}
     bool isInside(int t, Vec2); //checks if a Vec2 is inside the triangle in the index t
     bool isInEdge(int t, Vec2); //checks if a Vec2 is in a edge of a triangle
     void print(); // prints the triangulation to standard output
@@ -50,6 +51,8 @@ public:
     bool isCCW(int f); // check if a triangle, in the position f of the triangles array, is ccw
     void flip(int t1, int t2);
     bool integrity(int t);
+    void legalize(int t1, int t2);
+    bool areConnected(int,int);
 };
 
 float crossa(Vec2 a, Vec2 b);

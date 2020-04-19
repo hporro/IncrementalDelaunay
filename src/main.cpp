@@ -51,7 +51,8 @@ int main(int argn, char** argv){
 
     //gen triangulation
     Triangulation tri = Triangulation(points,points.size(),p0,p1,p2);
-    //std::cout << tri.incount << " " << tri.edgecount << " " << tri.oedgecount << std::endl;
+
+    std::cout << tri.incount << " " << tri.edgecount << " " << tri.oedgecount << std::endl;
     TriangulationDrawer td(&tri);
     td.setColor(dgui->state->triangulation_color);
 

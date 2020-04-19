@@ -43,9 +43,9 @@ public:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         std::vector<unsigned int> inds(t->tcount*3);
         for(int i=0;i<t->tcount;i++){
-            inds[i*3+0] = t->triangles[i].v0;
-            inds[i*3+1] = t->triangles[i].v1;
-            inds[i*3+2] = t->triangles[i].v2;
+            inds[i*3+0] = t->triangles[i].v[0];
+            inds[i*3+1] = t->triangles[i].v[1];
+            inds[i*3+2] = t->triangles[i].v[2];
         }
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, t->tcount*3*sizeof(unsigned int), &inds[0], GL_STATIC_DRAW);
 

@@ -4,15 +4,14 @@
 #include "../src/delaunay.h"
 #include "../src/point_generator.h"
 
-#define POINTS_NUMBER 10000
+#define POINTS_NUMBER 500
 
 Vec2 p0 = Vec2(-0.9,-0.9);
 Vec2 p1 = Vec2(0.9,-0.9);
 Vec2 p2 = Vec2(0.0,0.9);
 
-std::vector<Vec2> points = POINT_GENERATOR::gen_points_triangle(POINTS_NUMBER,p0,p1,p2);
-
-Triangulation t(points,points.size(),p0,p1,p2);
+std::vector<Vec2> points;
+Triangulation t;
 
 //checks that every point is at the left or in every edge of the bounding triangle
 void test_isLeft(){
@@ -61,6 +60,8 @@ void all_points_check(){
 }
 
 int main(){
+    points = POINT_GENERATOR::gen_points_triangle(POINTS_NUMBER,p0,p1,p2);
+    t = Triangulation(points,points.size(),p0,p1,p2);
     RUN(test_isLeft);
     RUN(test_CCW);
     RUN(test_isInside);
