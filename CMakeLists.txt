@@ -4,7 +4,7 @@ project(Delaunay_visual VERSION 0.1 LANGUAGES CXX C)
 set (CMAKE_CXX_STANDARD 11)
 
 # GLFW: window manager for OpenGL context
-find_package(glfw3 3.3 REQUIRED)
+find_package(glfw3 REQUIRED)
 
 # GLM: Math library
 add_subdirectory(extern/glm)
@@ -33,7 +33,7 @@ target_link_libraries(delaunay_visual PUBLIC glm gl3w)
 
 # Main app: All together
 add_executable(main src/main.cpp)
-target_link_libraries(main PRIVATE delaunay_visual glfw3 gl3w DelaunayGUI)
+target_link_libraries(main PRIVATE delaunay_visual glfw gl3w DelaunayGUI ${CMAKE_DL_LIBS})
 
 # tests
 add_executable(tests test/tests.cpp)
