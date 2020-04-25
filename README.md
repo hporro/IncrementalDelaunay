@@ -29,7 +29,7 @@ cd Tarea1Mallas
 mkdir build
 cd build
 cmake ..
-make
+cmake --build .
 ```
 
 ### Running
