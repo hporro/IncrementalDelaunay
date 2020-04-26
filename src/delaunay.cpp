@@ -78,6 +78,33 @@ bool Triangulation::isInEdge(int t, Vec2 p){
     return false;
 }
 
+Triangulation::Triangulation(std::vector<Vec2> points, int numP) {
+    Vec2 p0 = Vec2(-0.9,-0.9);
+    Vec2 p1 = Vec2(0.9,-0.9);
+    Vec2 p2 = Vec2(0.9,0.9);
+    Vec2 p3 = Vec2(-0.9,0.9);
+    vertices = std::vector<Vertex>(numP+6); // num of vertices
+    triangles = std::vector<Triangle>(numP*2+4); // 2(n+3) - 2 - 3 = 2n+1 // num of faces
+
+    vertices[0] = Vertex(p0);
+    vertices[1] = Vertex(p1);
+    vertices[2] = Vertex(p2);
+    vertices[3] = Vertex(p3);
+
+    triangles[0] = Triangle(0,1,2,-1,1,-1);
+    triangles[1] = Triangle(0,2,3,-1,-1,0);
+
+    vcount = 4;
+    tcount = 2;
+
+    assert(isCCW(0)&&isCCW(1));
+    assert(frontTest(0));
+
+    for(int i=0;i<points.size();i++){
+        addPoint(points[i]);
+    }
+}
+
 Triangulation::Triangulation(std::vector<Vec2> points, int numP, Vec2 p0, Vec2 p1, Vec2 p2) {
     vertices = std::vector<Vertex>(numP+3); // num of vertices
     triangles = std::vector<Triangle>(numP*2+1); // 2(n+3) - 2 - 3 = 2n+1 // num of faces
@@ -96,7 +123,6 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP, Vec2 p0, Vec2 p
     }
 }
 bool Triangulation::integrity(int t){
-    if(t==-1)return true;
     int t0 = triangles[t].t[0];
     int t1 = triangles[t].t[1];
     int t2 = triangles[t].t[2];
@@ -109,10 +135,25 @@ bool Triangulation::integrity(int t){
 
     return (a&&b)&&c;
 }
+
+bool Triangulation::frontTest(int t){ // checks that every point is in the same index of a triangle that the triangle in front of it
+    bool res = true;
+    for(int i=0;i<3;i++){
+        int v = triangles[t].v[i];
+        int f = triangles[t].t[i];
+        if(f!=-1)for(int j=0;j<3;j++){
+            if(triangles[f].v[j]==v)res=false;
+        }
+    }
+    return res;
+}
 void Triangulation::addPointInside(Vec2 v, int tri_index){
     assert(isCCW(tri_index));
     assert(isInside(tri_index,v));
     assert(integrity(tri_index));
+    assert(frontTest(tri_index));
+
+    std::cout << "Insert inside: " << tri_index << std::endl;
 
     int f = tri_index;
     int f1 = tcount++;
@@ -153,6 +194,10 @@ void Triangulation::addPointInside(Vec2 v, int tri_index){
     triangles[f].t[2] = f2;
 
     vertices[p] = Vertex(v);
+
+    assert(isCCW(tri_index)&&isCCW(f1)&&isCCW(f2));
+    assert(integrity(tri_index)&&integrity(f1)&&integrity(f2));
+    assert(frontTest(tri_index)&&frontTest(f1)&&frontTest(f2));
 }
 void Triangulation::addPoint(Vec2 p){
     int tri_index = -1;
@@ -221,15 +266,6 @@ void Triangulation::addPoint(Vec2 p){
 void Triangulation::legalize(int t1, int t2){
     if(t2==-1)return;
     if(t1==-1)return;
-    assert(
-        ((triangles[t1].t[0] == t2) ||
-         (triangles[t1].t[1] == t2) ||
-         (triangles[t1].t[2] == t2)
-        ) &&
-        ((triangles[t2].t[0] == t1) ||
-         (triangles[t2].t[1] == t1) ||
-         (triangles[t2].t[2] == t1))
-    );
     int a[6];
     a[0] = triangles[t1].v[0];
     a[1] = triangles[t1].v[1];
@@ -237,7 +273,7 @@ void Triangulation::legalize(int t1, int t2){
     a[3] = triangles[t2].v[0];
     a[4] = triangles[t2].v[1];
     a[5] = triangles[t2].v[2];
-    int b[4];
+    int b[8];
     int count = 0;
 
     b[0] = a[0];
@@ -246,7 +282,14 @@ void Triangulation::legalize(int t1, int t2){
     for(int i=3;i<6;i++){
         if((a[i]!=b[0]) && (a[i]!=b[1]) && (a[i]!=b[2])) b[3] = a[i];
     }
-    if(inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)>-EPS) {
+    b[4] = a[3];
+    b[5] = a[4];
+    b[6] = a[5];
+    for(int i=0;i<3;i++){
+        if((a[i]!=b[4]) && (a[i]!=b[5]) && (a[i]!=b[6])) b[7] = a[i];
+    }
+    if(inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)>-EPS &&
+    inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos)>-EPS) {
         flip(t1,t2); 
     }
 }
@@ -377,72 +420,102 @@ bool Triangulation::isCCW(int f){
     Vec2 p0 = vertices[triangles[f].v[0]].pos;
     Vec2 p1 = vertices[triangles[f].v[1]].pos;
     Vec2 p2 = vertices[triangles[f].v[2]].pos;
-    
-    if(crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0)>-EPS) return true;
+    //std::cout << crossa(p0,p1) << " + " << crossa(p1,p2) << " + " << crossa(p2,p0) << "= " << crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0) << std::endl;
+    if((crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0))>-EPS) return true;
     
     return false;
 }
+
 void Triangulation::flip(int t1, int t2){
-    //assert(isCCW(t1)&&isCCW(t2));
-    //assert(integrity(t1)&&integrity(t2));
-    
-    int f1[3],p1[3];
-    int f2[3],p2[3];
-
-    f1[0] = triangles[t1].t[0];
-    f1[1] = triangles[t1].t[1];
-    f1[2] = triangles[t1].t[2];
-    p1[0] = triangles[t1].v[0];
-    p1[1] = triangles[t1].v[1];
-    p1[2] = triangles[t1].v[2];
-
-    f2[0] = triangles[t2].t[0];
-    f2[1] = triangles[t2].t[1];
-    f2[2] = triangles[t2].t[2];
-    p2[0] = triangles[t2].v[0];
-    p2[1] = triangles[t2].v[1];
-    p2[2] = triangles[t2].v[2];
-
-    int x = (f1[0]==t2?0:(f1[1]==t2?1:2)); //indice en t1 que corresponde a t2
-    int y = (f2[0]==t1?0:(f2[1]==t1?1:2)); //indice en t2 que corresponde a t1
-
-    triangles[t1].v[0] = p1[x];
-    triangles[t1].v[1] = p1[(x+1)%3];
-    triangles[t1].v[2] = p2[y];
-
-    triangles[t1].t[0] = f2[(y+1)%3];
-    triangles[t1].t[1] = t2;
-    triangles[t1].t[2] = f1[(x+2)%3];
-
-    triangles[t2].v[0] = p2[y];
-    triangles[t2].v[1] = p2[(y+1)%3];
-    triangles[t2].v[2] = p1[x];
-
-    triangles[t2].t[0] = f1[(x+1)%3];
-    triangles[t2].t[1] = t1;
-    triangles[t2].t[2] = f2[(y+2)%3];
-
-    if(f2[(y+1)%3]!=-1){
-        triangles[f2[(y+1)%3]].t[0] = (triangles[f2[(y+1)%3]].t[0] == t2 ? t1 : triangles[f2[(y+1)%3]].t[0]);
-        triangles[f2[(y+1)%3]].t[1] = (triangles[f2[(y+1)%3]].t[1] == t2 ? t1 : triangles[f2[(y+1)%3]].t[1]);
-        triangles[f2[(y+1)%3]].t[2] = (triangles[f2[(y+1)%3]].t[2] == t2 ? t1 : triangles[f2[(y+1)%3]].t[2]);
-    }
-
-    if(f1[(x+1)%3]!=-1){
-        triangles[f1[(x+1)%3]].t[0] = triangles[f1[(x+1)%3]].t[0] == t1 ? t2 : triangles[f1[(x+1)%3]].t[0];
-        triangles[f1[(x+1)%3]].t[1] = triangles[f1[(x+1)%3]].t[1] == t1 ? t2 : triangles[f1[(x+1)%3]].t[1];
-        triangles[f1[(x+1)%3]].t[2] = triangles[f1[(x+1)%3]].t[2] == t1 ? t2 : triangles[f1[(x+1)%3]].t[2];
-    }
-
-    if(!isCCW(t1)){
-        std::swap(triangles[t1].t[0],triangles[t1].t[1]);
-        std::swap(triangles[t1].v[0],triangles[t1].v[1]);
-    }
-    if(!isCCW(t2)){
-        std::swap(triangles[t2].t[0],triangles[t2].t[1]);
-        std::swap(triangles[t2].v[0],triangles[t2].v[1]);
-    }
-
     assert(isCCW(t1)&&isCCW(t2));
     assert(integrity(t1)&&integrity(t2));
+    assert(frontTest(t1)&&frontTest(t2));
+
+    std::cout << "Flip between: " << t1 << " " << t2 << std::endl;
+
+    int p10,p11,p12,p20,p21,p22;
+    int f10,f11,f12,f20,f21,f22;
+
+    int off = 0;
+
+    p10 = triangles[t1].v[0];
+    p11 = triangles[t1].v[1];
+    p12 = triangles[t1].v[2];
+    f10 = triangles[t1].t[0];
+    f11 = triangles[t1].t[1];
+    f12 = triangles[t1].t[2];
+
+    p20 = triangles[t2].v[0];
+    p21 = triangles[t2].v[1];
+    p22 = triangles[t2].v[2];
+    f20 = triangles[t2].t[0];
+    f21 = triangles[t2].t[1];
+    f22 = triangles[t2].t[2];
+
+    //if(f10 == t2)
+    if(f11 == t2){ // rotated 1 to the right
+        p10 = triangles[t1].v[1];
+        p11 = triangles[t1].v[2];
+        p12 = triangles[t1].v[0];
+        f10 = triangles[t1].t[1];
+        f11 = triangles[t1].t[2];
+        f12 = triangles[t1].t[0];
+    }
+    if(f12 == t2){ // rotated 2 to the right
+        p10 = triangles[t1].v[2];
+        p11 = triangles[t1].v[0];
+        p12 = triangles[t1].v[1];
+        f10 = triangles[t1].t[2];
+        f11 = triangles[t1].t[0];
+        f12 = triangles[t1].t[1];
+    }
+    //if(f20 == t1)
+    if(f21 == t1){ 
+        p20 = triangles[t2].v[1];
+        p21 = triangles[t2].v[2];
+        p22 = triangles[t2].v[0];
+        f20 = triangles[t2].t[1];
+        f21 = triangles[t2].t[2];
+        f22 = triangles[t2].t[0];
+    }
+    if(f22 == t1){ 
+        p20 = triangles[t2].v[2];
+        p21 = triangles[t2].v[0];
+        p22 = triangles[t2].v[1];
+        f20 = triangles[t2].t[2];
+        f21 = triangles[t2].t[0];
+        f22 = triangles[t2].t[1];
+    }
+
+    //std::cout << p11 << " " << p22 << std::endl;
+    //std::cout << p12 << " " << p21 << std::endl;
+
+    triangles[t1].t[0] = t2;
+    triangles[t1].t[1] = f12;
+    triangles[t1].t[2] = f21;
+    triangles[t1].v[0] = p11; assert(p11==p22);
+    triangles[t1].v[1] = p20;
+    triangles[t1].v[2] = p10;
+
+    triangles[t2].t[0] = t1;
+    triangles[t2].t[1] = f22;
+    triangles[t2].t[2] = f11;
+    triangles[t2].v[0] = p12; assert(p12==p21);
+    triangles[t2].v[1] = p10;
+    triangles[t2].v[2] = p20;
+
+    //update f11
+    if(f11!=-1)for(int i=0;i<3;i++){
+        if(triangles[f11].t[i]==t1)triangles[f11].t[i]=t2;
+    }
+    //update f21
+    if(f21!=-1)for(int i=0;i<3;i++){
+        if(triangles[f21].t[i]==t2)triangles[f21].t[i]=t1;
+    }
+
+    assert(integrity(t1)&&integrity(t2));
+    assert(isCCW(t1)&&isCCW(t2));
+    assert(frontTest(t1)&&frontTest(t2));
+
+    std::cout << "flip done" << std::endl;
 }

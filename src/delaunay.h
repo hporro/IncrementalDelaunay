@@ -32,6 +32,7 @@ public:
 class Triangulation {
 public:
     Triangulation(std::vector<Vec2> points, int numP, Vec2 p1, Vec2 p2, Vec2 p3); //makes a triangulation out of a list of points and a triangle. numP is to allocate memory for numP vertices
+    Triangulation(std::vector<Vec2> points, int numP);
     Triangulation(){}
     bool isInside(int t, Vec2); //checks if a Vec2 is inside the triangle in the index t
     bool isInEdge(int t, Vec2); //checks if a Vec2 is in a edge of a triangle
@@ -53,6 +54,7 @@ public:
     bool integrity(int t);
     void legalize(int t1, int t2);
     bool areConnected(int,int);
+    bool frontTest(int);
 };
 
 float crossa(Vec2 a, Vec2 b);

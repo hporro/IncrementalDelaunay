@@ -44,13 +44,23 @@ int main(int argn, char** argv){
     dgui->init(window);
 
     //gen points
+    Vec2 p00 = Vec2(-0.8,-0.8);
+    Vec2 p01 = Vec2(0.8,-0.8);
+    Vec2 p02 = Vec2(0.0,0.8);
+    std::vector<Vec2> points = POINT_GENERATOR::gen_points_triangle(30,p00,p01,p02);
+
+    Vec2 p10 = Vec2(-0.8,-0.8);
+    Vec2 p11 = Vec2(0.8,-0.8);
+    Vec2 p12 = Vec2(0.8,0.8);
+    Vec2 p13 = Vec2(-0.8,0.8);
+    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_square(30,p10,p11,p12,p13);
+
+    //gen triangulation
     Vec2 p0 = Vec2(-0.9,-0.9);
     Vec2 p1 = Vec2(0.9,-0.9);
     Vec2 p2 = Vec2(0.0,0.9);
-    std::vector<Vec2> points = POINT_GENERATOR::gen_points_triangle(10,p0,p1,p2);
-
-    //gen triangulation
     Triangulation tri = Triangulation(points,points.size(),p0,p1,p2);
+    //Triangulation tri = Triangulation(points2,points.size());
 
     std::cout << tri.incount << " " << tri.edgecount << " " << tri.oedgecount << std::endl;
     TriangulationDrawer td(&tri);
