@@ -30,9 +30,9 @@ double det(double a, double b, double c, double d, double e, double f, double g,
     return a*(e*i-f*h)-b*(d*i-f*g)+c*(d*h-e*g);
 }
 double inCircle(Vec2 a, Vec2 b, Vec2 c, Vec2 d){
-    return det( a.x-d.x,a.y-d.y,(a.x-d.y)*(a.x-d.y)+(a.y-d.y)*(a.y-d.y),
-                b.x-d.x,b.y-d.y,(b.x-d.y)*(b.x-d.y)+(b.y-d.y)*(b.y-d.y),
-                c.x-d.x,c.y-d.y,(c.x-d.y)*(c.x-d.y)+(c.y-d.y)*(c.y-d.y));
+    return det( a.x-d.x,a.y-d.y,(a.x-d.x)*(a.x-d.x)+(a.y-d.y)*(a.y-d.y),
+                b.x-d.x,b.y-d.y,(b.x-d.x)*(b.x-d.x)+(b.y-d.y)*(b.y-d.y),
+                c.x-d.x,c.y-d.y,(c.x-d.x)*(c.x-d.x)+(c.y-d.y)*(c.y-d.y));
 }
 
 //VERTEX IMPL
@@ -84,7 +84,7 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP) {
     Vec2 p2 = Vec2(0.9,0.9);
     Vec2 p3 = Vec2(-0.9,0.9);
     vertices = std::vector<Vertex>(numP+6); // num of vertices
-    triangles = std::vector<Triangle>(numP*3+10); // 2(n+6) - 2 - 3 = 2n+1 // num of faces
+    triangles = std::vector<Triangle>(numP*2+7); // 2(n+6) - 2 - 3 = 2n+7 // num of faces
 
     vertices[0] = Vertex(p0);
     vertices[1] = Vertex(p1);
