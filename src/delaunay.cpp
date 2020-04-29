@@ -29,6 +29,7 @@ T amin(T a, T b){
 double det(double a, double b, double c, double d, double e, double f, double g, double h, double i){
     return a*(e*i-f*h)-b*(d*i-f*g)+c*(d*h-e*g);
 }
+
 double inCircle(Vec2 a, Vec2 b, Vec2 c, Vec2 d){
     return det( a.x-d.x,a.y-d.y,(a.x-d.x)*(a.x-d.x)+(a.y-d.y)*(a.y-d.y),
                 b.x-d.x,b.y-d.y,(b.x-d.x)*(b.x-d.x)+(b.y-d.y)*(b.y-d.y),
@@ -83,8 +84,10 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP) {
     Vec2 p1 = Vec2(0.9,-0.9);
     Vec2 p2 = Vec2(0.9,0.9);
     Vec2 p3 = Vec2(-0.9,0.9);
-    vertices = std::vector<Vertex>(numP+6); // num of vertices
-    triangles = std::vector<Triangle>(numP*2+7); // 2(n+6) - 2 - 3 = 2n+7 // num of faces
+    maxVertices = numP+6;
+    maxTriangles = numP*2+7;
+    vertices = new Vertex[numP+6]; // num of vertices
+    triangles = new Triangle[numP*2+7]; // 2(n+6) - 2 - 3 = 2n+7 // num of faces
 
     vertices[0] = Vertex(p0);
     vertices[1] = Vertex(p1);
@@ -97,8 +100,10 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP) {
     vcount = 4;
     tcount = 2;
 
+#if ASSERT_PROBLEMS
     assert(isCCW(0)&&isCCW(1));
     assert(frontTest(0));
+#endif
 
     for(int i=0;i<points.size();i++){
         addPoint(points[i]);
@@ -106,8 +111,10 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP) {
 }
 
 Triangulation::Triangulation(std::vector<Vec2> points, int numP, Vec2 p0, Vec2 p1, Vec2 p2) {
-    vertices = std::vector<Vertex>(numP+3); // num of vertices
-    triangles = std::vector<Triangle>(numP*2+1); // 2(n+3) - 2 - 3 = 2n+1 // num of faces
+    maxTriangles = numP*2+1;
+    maxVertices = numP+3;
+    vertices = new Vertex[numP+3]; // num of vertices
+    triangles = new Triangle[numP*2+1]; // 2(n+3) - 2 - 3 = 2n+1 // num of faces
 
     vertices[0] = Vertex(p0);
     vertices[1] = Vertex(p1);
@@ -286,9 +293,11 @@ void Triangulation::legalize(int t1, int t2){
     }
 }
 void Triangulation::addPointInEdge(Vec2 v, int t1, int t2){
+#if ASSERT_PROBLEMS
     assert(isCCW(t1)&&isCCW(t2));
     assert(isInEdge(t1,v)&&isInEdge(t2,v));
     assert(integrity(t1)&&integrity(t2));
+#endif
     int f10,f20,f11,f21,f12,f22,p10,p20,p11,p21,p12,p22;
     
     p10 = triangles[t1].v[0];
@@ -342,9 +351,11 @@ void Triangulation::addPointInEdge(Vec2 v, int t1, int t2){
     }
 }
 void Triangulation::addPointInEdge(Vec2 v, int t){
+#if ASSERT_PROBLEMS
     assert(isCCW(t));
     assert(isInEdge(t,v));
     assert(integrity(t));
+#endif
 
     //std::cout << t << ": " << triangles[t].t[0] << " " << triangles[t].t[1] << " " << triangles[t].t[2] << std::endl;
 
@@ -375,11 +386,13 @@ void Triangulation::addPointInEdge(Vec2 v, int t){
     //std::cout << t1 << ": " << triangles[t1].t[0] << " " << triangles[t1].t[1] << " " << triangles[t1].t[2] << std::endl;
     //std::cout << t << ": " << triangles[t].v[0] << " " << triangles[t].v[1] << " " << triangles[t].v[2] << std::endl;
     //std::cout << t1 << ": " << triangles[t1].v[0] << " " << triangles[t1].v[1] << " " << triangles[t1].v[2] << std::endl;
+#if ASSERT_PROBLEMS
     assert(isCCW(t)&&isCCW(t1));
     assert(areConnected(t,t1));
     assert(integrity(t));
     assert(integrity(t1));
     assert(integrity(f2));
+#endif
 }
 bool Triangulation::areConnected(int t1, int t2){
     int vertcount = 0;
@@ -419,10 +432,11 @@ bool Triangulation::isCCW(int f){
 }
 
 void Triangulation::flip(int t1, int t2){
+#if ASSERT_PROBLEMS
     assert(isCCW(t1)&&isCCW(t2));
     assert(integrity(t1)&&integrity(t2));
     assert(frontTest(t1)&&frontTest(t2));
-
+#endif
     //std::cout << "Flip between: " << t1 << " " << t2 << std::endl;
 
     int p10,p11,p12,p20,p21,p22;
@@ -505,9 +519,15 @@ void Triangulation::flip(int t1, int t2){
         if(triangles[f21].t[i]==t2)triangles[f21].t[i]=t1;
     }
 
+#if ASSERT_PROBLEMS
     assert(integrity(t1)&&integrity(t2));
     assert(isCCW(t1)&&isCCW(t2));
     assert(frontTest(t1)&&frontTest(t2));
-
+#endif
     //std::cout << "flip done" << std::endl;
+}
+
+Triangulation::~Triangulation(){
+    delete triangles;
+    delete vertices;
 }

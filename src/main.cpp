@@ -44,17 +44,17 @@ int main(int argn, char** argv){
     dgui->init(window);
 
     //gen points
-    Vec2 p00 = Vec2(-0.85,-0.85);
-    Vec2 p01 = Vec2(0.85,-0.85);
-    Vec2 p02 = Vec2(0.0,0.85);
-    std::vector<Vec2> points = POINT_GENERATOR::gen_points_triangle(1700,p00,p01,p02);
+    Vec2 p00 = Vec2(-0.89,-0.89);
+    Vec2 p01 = Vec2(0.89,-0.89);
+    Vec2 p02 = Vec2(0.0,0.89);
+    std::vector<Vec2> points = POINT_GENERATOR::gen_points_triangle(10000,p00,p01,p02);
 
-    Vec2 p10 = Vec2(-0.85,-0.85);
-    Vec2 p11 = Vec2(0.85,-0.85);
-    Vec2 p12 = Vec2(0.85,0.85);
-    Vec2 p13 = Vec2(-0.85,0.85);
-    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_square(1700,p10,p11,p12,p13);
-    std::vector<Vec2> points3 = POINT_GENERATOR::gen_points_grid(30,40,p10,p11,p12,p13);
+    Vec2 p10 = Vec2(-0.89,-0.89);
+    Vec2 p11 = Vec2(0.89,-0.89);
+    Vec2 p12 = Vec2(0.89,0.89);
+    Vec2 p13 = Vec2(-0.89,0.89);
+    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_square(10000,p10,p11,p12,p13);
+    std::vector<Vec2> points3 = POINT_GENERATOR::gen_points_grid(100,100,p10,p11,p12,p13);
 
     //gen triangulation
     Vec2 p0 = Vec2(-0.9,-0.9);
