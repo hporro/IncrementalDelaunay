@@ -1,6 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define EPS 0.000001
+#define IN_TRIANGLE_EPS 0.000001
+#define IN_CIRCLE_EPS 0.0001
 
 #endif

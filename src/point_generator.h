@@ -8,5 +8,6 @@ namespace POINT_GENERATOR {
     Vec2 gen_point(float a, float b, float c, float d, Vec2 p0, Vec2 p1, Vec2 p2, Vec2 p3);
     std::vector<Vec2> gen_points_square(int n, Vec2 p0, Vec2 p1, Vec2 p2, Vec2 p3);
     std::vector<Vec2> gen_points_triangle(int n, Vec2 p0, Vec2 p1, Vec2 p3);
+    std::vector<Vec2> gen_points_grid(int x, int y, Vec2 p0, Vec2 p1, Vec2 p2, Vec2 p3);
     void print_points(std::vector<Vec2> points);
 }

@@ -4,20 +4,20 @@
 #include "constants.h"
 
 //HELPER FUNCTIONS
-float crossa(Vec2 a, Vec2 b){
+double crossa(Vec2 a, Vec2 b){
     return a.x*b.y-a.y*b.x;
 }
 
 bool isLeft(Vec2 a, Vec2 b){
-    return crossa(a,b) > EPS;
+    return crossa(a,b) > IN_TRIANGLE_EPS;
 }
 
 bool isRight(Vec2 a, Vec2 b){
-    return crossa(a,b) < EPS;
+    return crossa(a,b) < IN_TRIANGLE_EPS;
 }
 
 bool mightBeLeft(Vec2 a, Vec2 b){
-    return crossa(a,b) >= -EPS;
+    return crossa(a,b) >= -IN_TRIANGLE_EPS;
 }
 
 template<class T>
@@ -26,10 +26,10 @@ T amin(T a, T b){
     return b;
 }
 
-float det(float a, float b, float c, float d, float e, float f, float g, float h, float i){
+double det(double a, double b, double c, double d, double e, double f, double g, double h, double i){
     return a*(e*i-f*h)-b*(d*i-f*g)+c*(d*h-e*g);
 }
-float inCircle(Vec2 a, Vec2 b, Vec2 c, Vec2 d){
+double inCircle(Vec2 a, Vec2 b, Vec2 c, Vec2 d){
     return det( a.x-d.x,a.y-d.y,(a.x-d.y)*(a.x-d.y)+(a.y-d.y)*(a.y-d.y),
                 b.x-d.x,b.y-d.y,(b.x-d.y)*(b.x-d.y)+(b.y-d.y)*(b.y-d.y),
                 c.x-d.x,c.y-d.y,(c.x-d.y)*(c.x-d.y)+(c.y-d.y)*(c.y-d.y));
@@ -84,7 +84,7 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP) {
     Vec2 p2 = Vec2(0.9,0.9);
     Vec2 p3 = Vec2(-0.9,0.9);
     vertices = std::vector<Vertex>(numP+6); // num of vertices
-    triangles = std::vector<Triangle>(numP*2+4); // 2(n+3) - 2 - 3 = 2n+1 // num of faces
+    triangles = std::vector<Triangle>(numP*3+10); // 2(n+6) - 2 - 3 = 2n+1 // num of faces
 
     vertices[0] = Vertex(p0);
     vertices[1] = Vertex(p1);
@@ -148,12 +148,7 @@ bool Triangulation::frontTest(int t){ // checks that every point is in the same 
     return res;
 }
 void Triangulation::addPointInside(Vec2 v, int tri_index){
-    assert(isCCW(tri_index));
-    assert(isInside(tri_index,v));
-    assert(integrity(tri_index));
-    assert(frontTest(tri_index));
-
-    std::cout << "Insert inside: " << tri_index << std::endl;
+    //std::cout << "Insert inside: " << tri_index << std::endl;
 
     int f = tri_index;
     int f1 = tcount++;
@@ -195,9 +190,6 @@ void Triangulation::addPointInside(Vec2 v, int tri_index){
 
     vertices[p] = Vertex(v);
 
-    assert(isCCW(tri_index)&&isCCW(f1)&&isCCW(f2));
-    assert(integrity(tri_index)&&integrity(f1)&&integrity(f2));
-    assert(frontTest(tri_index)&&frontTest(f1)&&frontTest(f2));
 }
 void Triangulation::addPoint(Vec2 p){
     int tri_index = -1;
@@ -288,8 +280,8 @@ void Triangulation::legalize(int t1, int t2){
     for(int i=0;i<3;i++){
         if((a[i]!=b[4]) && (a[i]!=b[5]) && (a[i]!=b[6])) b[7] = a[i];
     }
-    if(inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)>-EPS &&
-    inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos)>-EPS) {
+    if(inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)>-IN_CIRCLE_EPS &&
+    inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos)>-IN_CIRCLE_EPS) {
         flip(t1,t2); 
     }
 }
@@ -354,7 +346,7 @@ void Triangulation::addPointInEdge(Vec2 v, int t){
     assert(isInEdge(t,v));
     assert(integrity(t));
 
-    std::cout << t << ": " << triangles[t].t[0] << " " << triangles[t].t[1] << " " << triangles[t].t[2] << std::endl;
+    //std::cout << t << ": " << triangles[t].t[0] << " " << triangles[t].t[1] << " " << triangles[t].t[2] << std::endl;
 
     int x = triangles[t].t[0] == -1 ? 0 : (triangles[t].t[1] == -1 ? 1 : 2);
 
@@ -379,10 +371,10 @@ void Triangulation::addPointInEdge(Vec2 v, int t){
         triangles[f2].t[1] = (triangles[f2].t[1] == t ? t1 : triangles[f2].t[1]);
         triangles[f2].t[2] = (triangles[f2].t[2] == t ? t1 : triangles[f2].t[2]);
     }
-    std::cout << t << ": " << triangles[t].t[0] << " " << triangles[t].t[1] << " " << triangles[t].t[2] << std::endl;
-    std::cout << t1 << ": " << triangles[t1].t[0] << " " << triangles[t1].t[1] << " " << triangles[t1].t[2] << std::endl;
-    std::cout << t << ": " << triangles[t].v[0] << " " << triangles[t].v[1] << " " << triangles[t].v[2] << std::endl;
-    std::cout << t1 << ": " << triangles[t1].v[0] << " " << triangles[t1].v[1] << " " << triangles[t1].v[2] << std::endl;
+    //std::cout << t << ": " << triangles[t].t[0] << " " << triangles[t].t[1] << " " << triangles[t].t[2] << std::endl;
+    //std::cout << t1 << ": " << triangles[t1].t[0] << " " << triangles[t1].t[1] << " " << triangles[t1].t[2] << std::endl;
+    //std::cout << t << ": " << triangles[t].v[0] << " " << triangles[t].v[1] << " " << triangles[t].v[2] << std::endl;
+    //std::cout << t1 << ": " << triangles[t1].v[0] << " " << triangles[t1].v[1] << " " << triangles[t1].v[2] << std::endl;
     assert(isCCW(t)&&isCCW(t1));
     assert(areConnected(t,t1));
     assert(integrity(t));
@@ -421,7 +413,7 @@ bool Triangulation::isCCW(int f){
     Vec2 p1 = vertices[triangles[f].v[1]].pos;
     Vec2 p2 = vertices[triangles[f].v[2]].pos;
     //std::cout << crossa(p0,p1) << " + " << crossa(p1,p2) << " + " << crossa(p2,p0) << "= " << crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0) << std::endl;
-    if((crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0))>-EPS) return true;
+    if((crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0))>-IN_TRIANGLE_EPS) return true;
     
     return false;
 }
@@ -431,7 +423,7 @@ void Triangulation::flip(int t1, int t2){
     assert(integrity(t1)&&integrity(t2));
     assert(frontTest(t1)&&frontTest(t2));
 
-    std::cout << "Flip between: " << t1 << " " << t2 << std::endl;
+    //std::cout << "Flip between: " << t1 << " " << t2 << std::endl;
 
     int p10,p11,p12,p20,p21,p22;
     int f10,f11,f12,f20,f21,f22;
@@ -517,5 +509,5 @@ void Triangulation::flip(int t1, int t2){
     assert(isCCW(t1)&&isCCW(t2));
     assert(frontTest(t1)&&frontTest(t2));
 
-    std::cout << "flip done" << std::endl;
+    //std::cout << "flip done" << std::endl;
 }

@@ -57,7 +57,7 @@ public:
     bool frontTest(int);
 };
 
-float crossa(Vec2 a, Vec2 b);
+double crossa(Vec2 a, Vec2 b);
 bool isLeft(Vec2 a, Vec2 b);
 bool isRight(Vec2 a, Vec2 b);
 bool mightBeLeft(Vec2 a, Vec2 b);
