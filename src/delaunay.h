@@ -44,6 +44,8 @@ public:
     void addPointInEdge(Vec2 point, int t1, int t2);
     void addPointInEdge(Vec2 point, int t);
     void flip(int t1, int t2);
+    int findContainerTriangleLinearSearch(Vec2 p);
+    int findContainerTriangleLogSearch(Vec2 p, Vec2 initialPoint, int prop, int cameFrom);
 
     bool isInside(int t, Vec2); //checks if a Vec2 is inside the triangle in the index t
     bool isInEdge(int t, Vec2); //checks if a Vec2 is in a edge of a triangle
@@ -52,6 +54,7 @@ public:
     void legalize(int t1, int t2);
     bool areConnected(int,int);
     bool frontTest(int);
+    bool sanity(int);
 
     void print(); // prints the triangulation to standard output
     void print_ind(); // prints connectivity

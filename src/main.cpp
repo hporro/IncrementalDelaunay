@@ -53,7 +53,7 @@ int main(int argn, char** argv){
     Vec2 p11 = Vec2(0.89,-0.89);
     Vec2 p12 = Vec2(0.89,0.89);
     Vec2 p13 = Vec2(-0.89,0.89);
-    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_square(10000,p10,p11,p12,p13);
+    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_square(1000,p10,p11,p12,p13);
     std::vector<Vec2> points3 = POINT_GENERATOR::gen_points_grid(100,100,p10,p11,p12,p13);
 
     //gen triangulation

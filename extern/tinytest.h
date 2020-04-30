@@ -50,9 +50,10 @@
 #define ASSERT(msg, expression) if (!tt_assert(__FILE__, __LINE__, (msg), (#expression), (expression) ? 1 : 0)) return
 
 /* Convenient assertion methods */
-/* TODO: Generate readable error messages for assert_equals or assert_str_equals */
 #define ASSERT_EQUALS(expected, actual) ASSERT((#actual), (expected) == (actual))
 #define ASSERT_STRING_EQUALS(expected, actual) ASSERT((#actual), strcmp((expected),(actual)) == 0)
+#define ASSERT_TRUE(actual) ASSERT_EQUALS((1),(actual))
+#define ASSERT_FALSE(actual) ASSERT_EQUALS((0),(actual))
 
 /* Run a test() function */
 #define RUN(test_function) tt_execute((#test_function), (test_function))

@@ -198,14 +198,43 @@ void Triangulation::addPointInside(Vec2 v, int tri_index){
     vertices[p] = Vertex(v);
 
 }
-void Triangulation::addPoint(Vec2 p){
-    int tri_index = -1;
+
+int Triangulation::findContainerTriangleLinearSearch(Vec2 p){
     for(int i=0;i<tcount;i++){
         if(isInside(i,p)){
-            tri_index = i;
-            break;
+            return i;
         }
     }
+    return -1;
+}
+
+Vec2 operator/(Vec2 v, float a){
+    return Vec2(v.x/a,v.y/a);
+}
+
+int Triangulation::findContainerTriangleLogSearch(Vec2 p, Vec2 initialPoint, int prop, int cameFrom){
+    if(prop == -1) return -1;
+    if(isInside(prop,p))return prop;
+    Vec2 v = initialPoint;
+    for(int i=0;i<3;i++){
+        int f = triangles[prop].t[i];
+        if(f==-1)continue;
+        Vec2 a = vertices[triangles[prop].v[(i+1)%3]].pos;
+        Vec2 b = vertices[triangles[prop].v[(i+2)%3]].pos;
+        if(
+            (isLeft(p-v,a-v) && isLeft(b-v,p-v)) ||
+            (isLeft(p-v,b-v) && isLeft(a-v,p-v))
+        ){
+            if(f!=cameFrom)return findContainerTriangleLogSearch(p,initialPoint,f,prop);
+        }
+    }
+    return -1;
+}
+
+void Triangulation::addPoint(Vec2 p){
+    //Vec2 initialPoint = (vertices[triangles[0].v[0]].pos+vertices[triangles[0].v[1]].pos+vertices[triangles[0].v[2]].pos)/3;
+    //int tri_index = findContainerTriangleLogSearch(p,initialPoint,0,-1);
+    int tri_index = findContainerTriangleLinearSearch(p);
     if(tri_index!=-1){
         this->incount++;
         addPointInside(p,tri_index);
@@ -530,4 +559,19 @@ void Triangulation::flip(int t1, int t2){
 Triangulation::~Triangulation(){
     delete triangles;
     delete vertices;
+}
+
+bool Triangulation::sanity(int t){
+    for(int i=0;i<3;i++){
+        int count = 0;
+        int f = triangles[t].t[i];
+        if(f==-1)continue;
+        for(int j=0;j<3;j++){
+            for(int k=0;k<3;k++){
+                if(triangles[t].v[k]==triangles[f].v[j])count++;
+            }
+        }
+        if(count != 2) return false;
+    }
+    return true;
 }
