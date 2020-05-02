@@ -1,3 +1,6 @@
+#ifndef DRAW_TRIANGULATION
+#define DRAW_TRIANGULATION
+
 #include <GL/gl3w.h>  
 #include <GLFW/glfw3.h>
 
@@ -19,6 +22,8 @@ public:
     GLuint ebo = 0;
     float color[3];
     Shader sh = Shader("../src/shaders/vertex.vert","../src/shaders/fragment.frag");
+
+    TriangulationDrawer(){}
 
     TriangulationDrawer(Triangulation *t) : t(t){
         genBuffers();
@@ -75,3 +80,5 @@ public:
         this->color[2] = color[2];
     }
 };
+
+#endif

@@ -17,7 +17,7 @@ bool isRight(Vec2 a, Vec2 b){
 }
 
 bool mightBeLeft(Vec2 a, Vec2 b){
-    return crossa(a,b) >= -IN_TRIANGLE_EPS;
+    return crossa(a,b) >= IN_TRIANGLE_EPS;
 }
 
 template<class T>
@@ -197,6 +197,11 @@ void Triangulation::addPointInside(Vec2 v, int tri_index){
 
     vertices[p] = Vertex(v);
 
+    updateNextToMinOne(f);
+    updateNextToMinOne(f1);
+    updateNextToMinOne(f2);
+    updateNextToMinOne(t1);
+    updateNextToMinOne(t2);
 }
 
 int Triangulation::findContainerTriangleLinearSearch(Vec2 p){
@@ -212,6 +217,10 @@ Vec2 operator/(Vec2 v, float a){
     return Vec2(v.x/a,v.y/a);
 }
 
+double dist2(Vec2 a,Vec2 b){
+    return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
+}
+
 int Triangulation::findContainerTriangleLogSearch(Vec2 p, Vec2 initialPoint, int prop, int cameFrom){
     if(prop == -1) return -1;
     if(isInside(prop,p))return prop;
@@ -222,19 +231,27 @@ int Triangulation::findContainerTriangleLogSearch(Vec2 p, Vec2 initialPoint, int
         Vec2 a = vertices[triangles[prop].v[(i+1)%3]].pos;
         Vec2 b = vertices[triangles[prop].v[(i+2)%3]].pos;
         if(
-            (isLeft(p-v,a-v) && isLeft(b-v,p-v)) ||
-            (isLeft(p-v,b-v) && isLeft(a-v,p-v))
+            (mightBeLeft(p-v,a-v) && mightBeLeft(b-v,p-v)) ||
+            (mightBeLeft(p-v,b-v) && mightBeLeft(a-v,p-v))
         ){
-            if(f!=cameFrom)return findContainerTriangleLogSearch(p,initialPoint,f,prop);
+            if(f!=cameFrom)return findContainerTriangleLogSearch(p,v,f,prop);
         }
     }
+    
     return -1;
 }
 
 void Triangulation::addPoint(Vec2 p){
-    //Vec2 initialPoint = (vertices[triangles[0].v[0]].pos+vertices[triangles[0].v[1]].pos+vertices[triangles[0].v[2]].pos)/3;
-    //int tri_index = findContainerTriangleLogSearch(p,initialPoint,0,-1);
-    int tri_index = findContainerTriangleLinearSearch(p);
+#if ASSERT_PROBLEMS
+    assert(
+        triangles[nextToMinOne].t[0]==-1 ||
+        triangles[nextToMinOne].t[1]==-1 ||
+        triangles[nextToMinOne].t[2]==-1
+    );
+#endif
+    Vec2 initialPoint = (vertices[triangles[nextToMinOne].v[0]].pos+vertices[triangles[nextToMinOne].v[1]].pos+vertices[triangles[nextToMinOne].v[2]].pos)/3;
+    int tri_index = findContainerTriangleLogSearch(p,initialPoint,nextToMinOne,-1);
+    //int tri_index = findContainerTriangleLinearSearch(p);
     if(tri_index!=-1){
         this->incount++;
         addPointInside(p,tri_index);
@@ -257,7 +274,7 @@ void Triangulation::addPoint(Vec2 p){
         return;
     }
     
-    int t1=-1,t2=-1;
+    /*int t1=-1,t2=-1;
     for(int i=0;i<tcount;i++){
         if((t1 == -1) && isInEdge(i,p)){
             t1 = i;
@@ -288,7 +305,7 @@ void Triangulation::addPoint(Vec2 p){
         //}
         //legalize(t1,aa);
         //legalize(tcount-1,bb);
-    }
+    }*/
 }
 
 void Triangulation::legalize(int t1, int t2){
@@ -422,6 +439,9 @@ void Triangulation::addPointInEdge(Vec2 v, int t){
     assert(integrity(t1));
     assert(integrity(f2));
 #endif
+    updateNextToMinOne(t);
+    updateNextToMinOne(t1);
+    updateNextToMinOne(f2);
 }
 bool Triangulation::areConnected(int t1, int t2){
     int vertcount = 0;
@@ -458,6 +478,13 @@ bool Triangulation::isCCW(int f){
     if((crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0))>-IN_TRIANGLE_EPS) return true;
     
     return false;
+}
+
+void Triangulation::updateNextToMinOne(int t){
+    if(t==-1)return;
+    for(int i=0;i<3;i++){
+        if(triangles[t].t[i]==-1)nextToMinOne=t;
+    }
 }
 
 void Triangulation::flip(int t1, int t2){
@@ -554,6 +581,8 @@ void Triangulation::flip(int t1, int t2){
     assert(frontTest(t1)&&frontTest(t2));
 #endif
     //std::cout << "flip done" << std::endl;
+    updateNextToMinOne(t1);
+    updateNextToMinOne(t2);
 }
 
 Triangulation::~Triangulation(){

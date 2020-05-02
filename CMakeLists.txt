@@ -32,16 +32,16 @@ set(IMGUI_SOURCES extern/imgui/examples/imgui_impl_glfw.cpp extern/imgui/example
 add_library(imgui ${IMGUI_SOURCES})
 target_link_libraries(imgui PUBLIC glfw gl3w)
 
-# DelaunayGUI: GUI for the application
-set(DELAUNAY_GUI_SOURCES src/GUI/gui.cpp)
-add_library(DelaunayGUI ${DELAUNAY_GUI_SOURCES})
-target_link_libraries(DelaunayGUI PRIVATE imgui)
-target_link_libraries(DelaunayGUI PUBLIC glfw gl3w)
-
 # Delaunay Data Structure manipulation and drawing files
 set(DELAUNAY_VISUAL_SOURCES src/draw_triangulation.h src/delaunay.h src/delaunay.cpp src/point_generator.h src/point_generator.cpp src/constants.h)
 add_library(delaunay_visual ${DELAUNAY_VISUAL_SOURCES})
 target_link_libraries(delaunay_visual PUBLIC glm gl3w)
+
+# DelaunayGUI: GUI for the application
+set(DELAUNAY_GUI_SOURCES src/GUI/gui.cpp)
+add_library(DelaunayGUI ${DELAUNAY_GUI_SOURCES})
+target_link_libraries(DelaunayGUI PRIVATE imgui)
+target_link_libraries(DelaunayGUI PUBLIC glfw gl3w delaunay_visual)
 
 # Main app: All together
 add_executable(main src/main.cpp)

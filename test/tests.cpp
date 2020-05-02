@@ -7,19 +7,19 @@
 
 #define POINTS_NUMBER 100 // set the number of points will have the test triangulation
 
-Vec2 p0 = Vec2(-0.9,-0.9);
-Vec2 p1 = Vec2(0.9,-0.9);
-Vec2 p2 = Vec2(0.0,0.9);
+Vec2 p0 = Vec2(-0.89,-0.89);
+Vec2 p1 = Vec2(0.89,-0.89);
+Vec2 p2 = Vec2(0.0,0.89);
 
 std::vector<Vec2> points;
 
 //checks that every point is at the left or in every edge of the bounding triangle
 void test_isLeft(){
     Triangulation t = Triangulation(points,points.size(),p0,p1,p2);
-    for(int i=0;i<points.size();i++){
-        ASSERT_TRUE(mightBeLeft(p2-p1,points[i]-p1));
-        ASSERT_TRUE(mightBeLeft(p1-p0,points[i]-p0));
-        ASSERT_TRUE(mightBeLeft(p0-p2,points[i]-p2));
+    for(int i=3;i<points.size();i++){
+        ASSERT_TRUE(isLeft(p2-p1,points[i]-p1));
+        ASSERT_TRUE(isLeft(p1-p0,points[i]-p0));
+        ASSERT_TRUE(isLeft(p0-p2,points[i]-p2));
     }
 }
 
