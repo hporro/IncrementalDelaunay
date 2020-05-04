@@ -21,7 +21,7 @@ public:
     GLuint vbo = 0;
     GLuint ebo = 0;
     float color[3];
-    Shader sh = Shader("../src/shaders/vertex.vert","../src/shaders/fragment.frag");
+    Shader sh = Shader("vertex.vert","fragment.frag");
 
     TriangulationDrawer(){}
 
