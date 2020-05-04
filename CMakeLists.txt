@@ -43,10 +43,6 @@ add_library(DelaunayGUI ${DELAUNAY_GUI_SOURCES})
 target_link_libraries(DelaunayGUI PRIVATE imgui)
 target_link_libraries(DelaunayGUI PUBLIC glfw gl3w delaunay_visual)
 
-# Main app: All together
-add_executable(main src/main.cpp)
-target_link_libraries(main PRIVATE delaunay_visual glfw gl3w DelaunayGUI ${CMAKE_DL_LIBS})
-
 # tests
 add_executable(tests test/tests.cpp)
 target_link_libraries(tests PRIVATE glm delaunay_visual glfw gl3w)
@@ -67,3 +63,7 @@ endforeach(SHADER)
 # Experiments executable
 add_executable(Experiments Experiments/exps.cpp)
 target_link_libraries(Experiments PRIVATE glm delaunay_visual glfw gl3w)
+
+# Main app: All together
+add_executable(main src/main.cpp)
+target_link_libraries(main PRIVATE delaunay_visual glfw gl3w DelaunayGUI ${CMAKE_DL_LIBS})
