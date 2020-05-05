@@ -34,7 +34,6 @@ public:
     Triangulation(std::vector<Vec2> points, int numP, Vec2 p1, Vec2 p2, Vec2 p3); //makes a triangulation out of a list of points and a triangle. numP is to allocate memory for numP vertices
     Triangulation(std::vector<Vec2> points, int numP);
     ~Triangulation();
-    Triangulation(){}
 
     Vertex *vertices;
     Triangle *triangles;

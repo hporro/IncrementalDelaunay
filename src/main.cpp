@@ -37,37 +37,27 @@ int main(int argn, char** argv){
         return 1;
     }
 
-    // gui for the program
-    GUIState* gstate = new GUIState();
-    DelaunayGUI* dgui = new DelaunayGUI();
-    dgui->state = gstate;
-    dgui->init(window);
-
-    //gen points
-    Vec2 p00 = Vec2(-0.89,-0.89);
-    Vec2 p01 = Vec2(0.89,-0.89);
-    Vec2 p02 = Vec2(0.0,0.89);
-    std::vector<Vec2> points = POINT_GENERATOR::gen_points_triangle(10000,p00,p01,p02);
+    int numP = 1000;
 
     Vec2 p10 = Vec2(-0.89,-0.89);
     Vec2 p11 = Vec2(0.89,-0.89);
     Vec2 p12 = Vec2(0.89,0.89);
     Vec2 p13 = Vec2(-0.89,0.89);
-    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_square(10000,p10,p11,p12,p13);
-    std::vector<Vec2> points3 = POINT_GENERATOR::gen_points_grid(100,100,p10,p11,p12,p13);
 
-    //gen triangulation
-    Vec2 p0 = Vec2(-0.9,-0.9);
-    Vec2 p1 = Vec2(0.9,-0.9);
-    Vec2 p2 = Vec2(0.0,0.9);
-    //Triangulation tri = Triangulation(points,points.size(),p0,p1,p2);
-    Triangulation tri = Triangulation(points2,points.size());
-    //Triangulation tri = Triangulation(points3,points.size());
+    std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
+    Triangulation *t = new Triangulation(points,points.size());
+    TriangulationDrawer *td = new TriangulationDrawer(t);
 
-    std::cout << tri.incount << " " << tri.edgecount << " " << tri.oedgecount << std::endl;
-    TriangulationDrawer td(&tri);
-    td.setColor(dgui->state->triangulation_color);
+    // Gui for the program
+    GUIState* gstate = new GUIState();
+    DelaunayGUI* dgui = new DelaunayGUI();
+    dgui->state = gstate;
+    dgui->init(window);
+    dgui->state->t = t;
+    dgui->state->numT = t->tcount;
+    dgui->state->td = td;
 
+    glEnable( GL_PROGRAM_POINT_SIZE );
     // Main loop
     while (!glfwWindowShouldClose(window)){
         glfwPollEvents();
@@ -76,8 +66,23 @@ int main(int argn, char** argv){
         glViewport(0, 0, display_w, display_h);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        td.setColor(dgui->state->triangulation_color);
-        td.draw();
+        if(dgui->state->newTriagulationNeeded){
+            delete t;
+            delete td;
+
+            dgui->state->newTriagulationNeeded = false;
+
+            points = POINT_GENERATOR::gen_points_square(gstate->futNumP,p10,p11,p12,p13);
+            t = new Triangulation(points,points.size());
+            td = new TriangulationDrawer(t);
+            gstate->numP = t->vcount;
+            gstate->numT = t->tcount;
+        }
+        glPointSize(dgui->state->PointSize);
+        td->setColor(dgui->state->triangulation_color);
+        td->draw();
+        if(dgui->state->ShowPoints)
+            td->draw_points();
         glfwGetCursorPos(window, &dgui->state->xpos, &dgui->state->ypos);
         dgui->draw();
         dgui->render();

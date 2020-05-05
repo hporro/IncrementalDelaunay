@@ -274,7 +274,7 @@ void Triangulation::addPoint(Vec2 p){
         return;
     }
     
-    /*int t1=-1,t2=-1;
+    int t1=-1,t2=-1;
     for(int i=0;i<tcount;i++){
         if((t1 == -1) && isInEdge(i,p)){
             t1 = i;
@@ -305,7 +305,7 @@ void Triangulation::addPoint(Vec2 p){
         //}
         //legalize(t1,aa);
         //legalize(tcount-1,bb);
-    }*/
+    }
 }
 
 void Triangulation::legalize(int t1, int t2){

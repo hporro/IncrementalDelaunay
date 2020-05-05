@@ -36,12 +36,21 @@ void DelaunayGUI::draw(){
         ImGui::NewFrame();
         {
             ImGui::Begin("Options",&state->optionsActive,ImGuiWindowFlags_MenuBar);
-            ImGui::Text("Triangulation options");
+            ImGui::Text("Triangulation visual options");
             ImGui::ColorEdit3("Color",state->triangulation_color);
+            ImGui::Checkbox("Show Points",&state->ShowPoints);
+            ImGui::InputInt("Point Size",&state->PointSize);
+            ImGui::Text("Make triangulation options");
+            ImGui::InputInt("Number of points",&state->futNumP);
+            if(ImGui::Button("New Triangulation")){
+                state->newTriagulationNeeded = true;
+            }
             ImGui::End();
         }
         {
-            ImGui::Begin("Info",&state->optionsActive);
+            ImGui::Begin("Triangulation Info",&state->optionsActive);
+            ImGui::Text("Number of Vertices: %d",state->numP);
+            ImGui::Text("Number of Triangles: %d",state->numT);
             ImGui::End();
         }
         ImGui::Render();

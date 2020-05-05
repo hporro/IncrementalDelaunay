@@ -23,8 +23,6 @@ public:
     float color[3];
     Shader sh = Shader("../src/shaders/vertex.vert","../src/shaders/fragment.frag");
 
-    TriangulationDrawer(){}
-
     TriangulationDrawer(Triangulation *t) : t(t){
         genBuffers();
     }
@@ -68,6 +66,14 @@ public:
         glBindVertexArray(vao);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDrawElements(GL_TRIANGLES,t->tcount*3,GL_UNSIGNED_INT, 0);
+    }
+
+    void draw_points(){
+        sh.use();
+        sh.setVec3("aColor",glm::vec3(1-color[0],1-color[1],1-color[2]));
+        glBindVertexArray(vao);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glDrawElements(GL_POINTS,t->tcount*3,GL_UNSIGNED_INT, 0);
     }
 
     void changeTriangulation(Triangulation* t){
