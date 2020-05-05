@@ -57,6 +57,7 @@ Triangle::Triangle(){}
 
 //TRIANGULATION IMPL
 bool Triangulation::isInside(int t, Vec2 p){
+    if (t == -1)return 0;
     Vec2 p1 = vertices[triangles[t].v[0]].pos;
     Vec2 p2 = vertices[triangles[t].v[1]].pos;
     Vec2 p3 = vertices[triangles[t].v[2]].pos;
