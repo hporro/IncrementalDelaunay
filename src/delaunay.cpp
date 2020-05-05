@@ -218,6 +218,10 @@ Vec2 operator/(Vec2 v, float a){
     return Vec2(v.x/a,v.y/a);
 }
 
+Vec2 operator*(Vec2 v, float a){
+    return Vec2(v.x*a,v.y*a);
+}
+
 double dist2(Vec2 a,Vec2 b){
     return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
 }
@@ -226,6 +230,8 @@ int Triangulation::findContainerTriangleLogSearch(Vec2 p, Vec2 initialPoint, int
     if(prop == -1) return -1;
     if(isInside(prop,p))return prop;
     Vec2 v = initialPoint;
+    bool findOne = false;
+    int posible = -1;
     for(int i=0;i<3;i++){
         int f = triangles[prop].t[i];
         if(f==-1)continue;
@@ -235,11 +241,16 @@ int Triangulation::findContainerTriangleLogSearch(Vec2 p, Vec2 initialPoint, int
             (mightBeLeft(p-v,a-v) && mightBeLeft(b-v,p-v)) ||
             (mightBeLeft(p-v,b-v) && mightBeLeft(a-v,p-v))
         ){
-            if(f!=cameFrom)return findContainerTriangleLogSearch(p,v,f,prop);
+            if(f!=cameFrom){
+                if(findOne){
+                    //std::cout << "hay 2" << std::endl;
+                }
+                findOne = true;
+                posible = f;
+            }
         }
     }
-    
-    return -1;
+    return findContainerTriangleLogSearch(p,v,posible,prop);
 }
 
 void Triangulation::addPoint(Vec2 p){
@@ -275,7 +286,7 @@ void Triangulation::addPoint(Vec2 p){
         return;
     }
     
-    int t1=-1,t2=-1;
+    /*int t1=-1,t2=-1;
     for(int i=0;i<tcount;i++){
         if((t1 == -1) && isInEdge(i,p)){
             t1 = i;
@@ -306,7 +317,7 @@ void Triangulation::addPoint(Vec2 p){
         //}
         //legalize(t1,aa);
         //legalize(tcount-1,bb);
-    }
+    }*/
 }
 
 void Triangulation::legalize(int t1, int t2){

@@ -4,7 +4,7 @@ Incremental Delaunay triangulation with visualization. It was implemented using 
 
 ## Screenshots
 
-![Screenshot](screenshots/square1700.jpg)
+![Screenshot](screenshots/delaunaySqrt1000.jpg)
 
 ## Getting Started
 
