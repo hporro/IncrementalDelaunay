@@ -55,6 +55,7 @@ int main(int argn, char** argv){
     dgui->init(window);
     dgui->state->t = t;
     dgui->state->numT = t->tcount;
+    dgui->state->numP = t->vcount;
     dgui->state->td = td;
 
     glEnable( GL_PROGRAM_POINT_SIZE );

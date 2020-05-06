@@ -3,6 +3,8 @@
 #include "delaunay.h"
 #include "constants.h"
 
+#include <queue>
+
 //HELPER FUNCTIONS
 double crossa(Vec2 a, Vec2 b){
     return a.x*b.y-a.y*b.x;
@@ -227,30 +229,38 @@ double dist2(Vec2 a,Vec2 b){
 }
 
 int Triangulation::findContainerTriangleLogSearch(Vec2 p, Vec2 initialPoint, int prop, int cameFrom){
-    if(prop == -1) return -1;
     if(isInside(prop,p))return prop;
+
+    int *visited = new int[tcount];
+    for(int i=0;i<tcount;i++)visited[i]=0;
+
     Vec2 v = initialPoint;
-    bool findOne = false;
-    int posible = -1;
-    for(int i=0;i<3;i++){
-        int f = triangles[prop].t[i];
-        if(f==-1)continue;
-        Vec2 a = vertices[triangles[prop].v[(i+1)%3]].pos;
-        Vec2 b = vertices[triangles[prop].v[(i+2)%3]].pos;
-        if(
-            (mightBeLeft(p-v,a-v) && mightBeLeft(b-v,p-v)) ||
-            (mightBeLeft(p-v,b-v) && mightBeLeft(a-v,p-v))
-        ){
-            if(f!=cameFrom){
-                if(findOne){
-                    //std::cout << "hay 2" << std::endl;
+
+    std::vector<int> q(10);
+    q.push_back(prop);
+
+    while(!q.empty()){
+        int t = q[q.size()-1];
+        if(isInside(t,p))return t;
+        q.pop_back();
+        for(int i=0;i<3;i++){
+            int f = triangles[t].t[i];
+            if(f==-1)continue;
+            Vec2 a = vertices[triangles[t].v[(i+1)%3]].pos;
+            Vec2 b = vertices[triangles[t].v[(i+2)%3]].pos;
+            if(
+                (mightBeLeft(p-v,a-v) && mightBeLeft(b-v,p-v)) ||
+                (mightBeLeft(p-v,b-v) && mightBeLeft(a-v,p-v))
+            ){
+                if(!visited[f]){
+                    visited[f]=1;
+                    q.push_back(f);
                 }
-                findOne = true;
-                posible = f;
             }
         }
     }
-    return findContainerTriangleLogSearch(p,v,posible,prop);
+
+    return -1;
 }
 
 void Triangulation::addPoint(Vec2 p){

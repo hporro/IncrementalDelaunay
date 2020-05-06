@@ -40,6 +40,7 @@
         "type_traits": "cpp",
         "typeinfo": "cpp",
         "cstddef": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "string": "cpp"
     }
 }

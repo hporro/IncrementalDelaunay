@@ -6,25 +6,17 @@ Incremental Delaunay triangulation with visualization. It was implemented using 
 
 ![Screenshot](screenshots/delaunaySqrt1000.jpg)
 
-## Getting Started
+## Getting Started (Ubuntu)
 
-These instructions will get you a copy of the project up and running on your local machine.
+These instructions will get you a copy of the project up and running on your local ubuntu machine.
 
-### Prerequisites
+### Prerequisites 
 
-To run the project, you will need to have installed glfw library in your computer. If you have a ubuntu distro, you only need to run:
-
-```
-sudo apt-get install libglfw3
-sudo apt-get install libglfw3-dev
-```
-
-Other than that, you only need a graphics card capable to run OpenGL 3.2 core profile, CMake (version 3.1 or more) and a C++ compiler capable to compile C++11 (g++-4.8 or more works).
+You only need a graphics card capable to run OpenGL 3.2 core profile, CMake (version 3.1 or more) and a C++ compiler capable to compile C++11 (g++-4.8 or more works).
 
 ### Installing
 
 ```
-git clone https://github.com/hporro/Tarea1Mallas
 cd Tarea1Mallas
 mkdir build
 cd build
@@ -47,6 +39,20 @@ To run the tests, you have to run the tests executable in the build folder:
 ```
 ./tests
 ```
+
+## Getting Started (Windows)
+
+These instructions will get you a copy of the project up and running on your local Windows machine.
+
+### Prerequisites
+
+This project have been run in Visual Studio 2019, but it should also work in Visual Studio 2017 because the support fot CMake in both of those versions works as good as the other. Also, you need a graphics card capable to run OpenGL 3.2 core profile.
+
+### Installing
+
+### Running
+
+## Running the tests
 
 ## Built With
 

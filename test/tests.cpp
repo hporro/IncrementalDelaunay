@@ -5,7 +5,7 @@
 #include "../src/delaunay.h"
 #include "../src/point_generator.h"
 
-#define POINTS_NUMBER 100 // set the number of points will have the test triangulation
+#define POINTS_NUMBER 1000 // set the number of points will have the test triangulation
 
 Vec2 p0 = Vec2(-0.89,-0.89);
 Vec2 p1 = Vec2(0.89,-0.89);
@@ -35,7 +35,7 @@ void test_CCW(){
 //or one or two triangles which has it in a edge.
 void test_isInside(){
     Triangulation t = Triangulation(points,points.size(),p0,p1,p2);
-    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_triangle(2,p0,p1,p2);
+    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_triangle(2000,p0,p1,p2);
     for(int i=0;i<points2.size();i++){
         bool a = false;
         bool b = false;
