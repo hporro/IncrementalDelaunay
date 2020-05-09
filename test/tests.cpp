@@ -94,6 +94,36 @@ void all_points_check(){
     ASSERT_EQUALS(POINTS_NUMBER,t.incount+t.oedgecount+t.edgecount);
 }
 
+//checks that all edges obey the delaunay test
+void delaunay_test() {
+    Vec2 p10 = Vec2(-0.8, -0.8);
+    Vec2 p11 = Vec2(0.8, -0.8);
+    Vec2 p12 = Vec2(0.8, 0.8);
+    Vec2 p13 = Vec2(-0.8, 0.8);
+    points = POINT_GENERATOR::gen_points_grid((int)sqrt(POINTS_NUMBER), (int)sqrt(POINTS_NUMBER), p10, p11, p12, p13);
+    Triangulation t = Triangulation(points, points.size(), p0, p1, p2);
+    for (int i = 0; i < t.tcount; i++) { // all triangles
+        for (int j = 0; j < 3; j++) { // each triangle neighbour
+            int tj = t.triangles[i].t[j];
+            if(tj!=-1)for (int k = 0; k < 3; k++) { // j triangle vertices
+                int vj = t.triangles[tj].v[k];
+                bool different = true;
+                for (int l = 0; l < 3; l++) { // i triangle vertices
+                    if (vj == t.triangles[i].v[l]) different = false;
+                }
+                if (different) {
+                    Vec2 a = t.vertices[t.triangles[i].v[0]].pos;
+                    Vec2 b = t.vertices[t.triangles[i].v[1]].pos;
+                    Vec2 c = t.vertices[t.triangles[i].v[2]].pos;
+                    Vec2 d = t.vertices[vj].pos;
+                    float ff = inCircle(a, b, c, d);
+                    ASSERT_TRUE(ff<0.0001);
+                }
+            }
+        }
+    }
+}
+
 int main(){
     points = POINT_GENERATOR::gen_points_triangle(POINTS_NUMBER,p0,p1,p2);
     RUN(test_isLeft);
@@ -102,5 +132,6 @@ int main(){
     RUN(test_all_connected);
     RUN(all_points_check);
     RUN(test_sanity);
+    RUN(delaunay_test);
     return TEST_REPORT();
 }

@@ -8,7 +8,7 @@ class GUIState {
 public:
     GUIState() {}
     bool optionsActive = true;
-    float triangulation_color[3] = {1.0f, 0.5f, 0.2f};
+    float triangulation_color[3] = {0.27f, 0.356f, 1.0f};
     double xpos, ypos;
     int numP = 1000;
     int futNumP = numP;
@@ -21,6 +21,7 @@ public:
     bool ShowPoints = false;
 
     bool newTriagulationNeeded = false;
+    bool genGrid = true;
 };
 
 class DelaunayGUI {

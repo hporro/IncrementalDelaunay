@@ -19,7 +19,7 @@ bool isRight(Vec2 a, Vec2 b){
 }
 
 bool mightBeLeft(Vec2 a, Vec2 b){
-    return crossa(a,b) >= IN_TRIANGLE_EPS;
+    return crossa(a,b) >= -IN_TRIANGLE_EPS;
 }
 
 template<class T>
@@ -69,7 +69,6 @@ bool Triangulation::isInside(int t, Vec2 p){
 }
 
 bool Triangulation::isInEdge(int t, Vec2 p){
-    if(isInside(t,p))return false; // in our context this will never happend, so we can skip this check
     Vec2 p1 = vertices[triangles[t].v[0]].pos;
     Vec2 p2 = vertices[triangles[t].v[1]].pos;
     Vec2 p3 = vertices[triangles[t].v[2]].pos;
@@ -242,6 +241,7 @@ int Triangulation::findContainerTriangleLogSearch(Vec2 p, Vec2 initialPoint, int
     while(!q.empty()){
         int t = q[q.size()-1];
         if(isInside(t,p))return t;
+        if(isInEdge(t,p))return t;
         q.pop_back();
         for(int i=0;i<3;i++){
             int f = triangles[t].t[i];
@@ -278,21 +278,11 @@ void Triangulation::addPoint(Vec2 p){
         this->incount++;
         addPointInside(p,tri_index);
         int a = tri_index,b=tcount-1,c=tcount-2;
-        int aa = -1;
-        int bb = -1;
-        int cc = -1;
-        for(int i=0;i<3;i++){
-            if(triangles[a].t[i]!=b && triangles[a].t[i]!=c)aa=triangles[a].t[i];
+        for (int i = 0; i < 3; i++) {
+            if (triangles[a].t[i] != b && triangles[a].t[i] != c)legalize(a, triangles[a].t[i]);
+            if (triangles[b].t[i] != a && triangles[b].t[i] != c)legalize(b, triangles[b].t[i]);
+            if (triangles[c].t[i] != b && triangles[c].t[i] != a)legalize(c, triangles[c].t[i]);
         }
-        for(int i=0;i<3;i++){
-            if(triangles[b].t[i]!=a && triangles[b].t[i]!=c)bb=triangles[b].t[i];
-        }
-        for(int i=0;i<3;i++){
-            if(triangles[c].t[i]!=a && triangles[c].t[i]!=b)cc=triangles[c].t[i];
-        }
-        legalize(a,aa);
-        legalize(b,bb);
-        legalize(c,cc);
         return;
     }
     
@@ -308,7 +298,7 @@ void Triangulation::addPoint(Vec2 p){
     }
     if((t1!=-1) && (t2!=-1)){
         this->edgecount++;
-        //addPointInEdge(p,t1,t2);
+        addPointInEdge(p,t1,t2);
         //legalize(t1,t2);
         //legalize(t1,tcount-2);
         //legalize(tcount-1,tcount-2);
@@ -317,7 +307,7 @@ void Triangulation::addPoint(Vec2 p){
     }
     else if((t1!=-1) && (t2==-1)){
         this->oedgecount++;
-        //addPointInEdge(p,t1);
+        addPointInEdge(p,t1);
         //int aa=-1,bb=-1;
         //for(int i=0;i<3;i++){
         //    if(triangles[t1].t[i]!=-1 && triangles[t1].t[i]!=(tcount-1))aa=triangles[t1].t[i];
@@ -355,9 +345,10 @@ void Triangulation::legalize(int t1, int t2){
     for(int i=0;i<3;i++){
         if((a[i]!=b[4]) && (a[i]!=b[5]) && (a[i]!=b[6])) b[7] = a[i];
     }
-    if(inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)>-IN_CIRCLE_EPS &&
+    if(inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)>-IN_CIRCLE_EPS ||
     inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos)>-IN_CIRCLE_EPS) {
-        flip(t1,t2); 
+        flip(t1,t2);
+
     }
 }
 void Triangulation::addPointInEdge(Vec2 v, int t1, int t2){
@@ -424,8 +415,6 @@ void Triangulation::addPointInEdge(Vec2 v, int t){
     assert(isInEdge(t,v));
     assert(integrity(t));
 #endif
-
-    //std::cout << t << ": " << triangles[t].t[0] << " " << triangles[t].t[1] << " " << triangles[t].t[2] << std::endl;
 
     int x = triangles[t].t[0] == -1 ? 0 : (triangles[t].t[1] == -1 ? 1 : 2);
 
@@ -496,7 +485,6 @@ bool Triangulation::isCCW(int f){
     Vec2 p0 = vertices[triangles[f].v[0]].pos;
     Vec2 p1 = vertices[triangles[f].v[1]].pos;
     Vec2 p2 = vertices[triangles[f].v[2]].pos;
-    //std::cout << crossa(p0,p1) << " + " << crossa(p1,p2) << " + " << crossa(p2,p0) << "= " << crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0) << std::endl;
     if((crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0))>-IN_TRIANGLE_EPS) return true;
     
     return false;

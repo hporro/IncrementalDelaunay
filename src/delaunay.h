@@ -76,5 +76,7 @@ double crossa(Vec2 a, Vec2 b);
 bool isLeft(Vec2 a, Vec2 b);
 bool isRight(Vec2 a, Vec2 b);
 bool mightBeLeft(Vec2 a, Vec2 b);
+double det(double a, double b, double c, double d, double e, double f, double g, double h, double i);
+double inCircle(Vec2 a, Vec2 b, Vec2 c, Vec2 d);
 
 #endif

@@ -23,7 +23,7 @@ int main(int argn, char** argv){
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create window with graphics context
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Incremental Delaunay Triangulation", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(700, 700, "Incremental Delaunay Triangulation", NULL, NULL);
     if (window == NULL)
         return 1;
     glfwMakeContextCurrent(window);
@@ -38,11 +38,11 @@ int main(int argn, char** argv){
     }
 
     int numP = 1000;
-
-    Vec2 p10 = Vec2(-0.89,-0.89);
-    Vec2 p11 = Vec2(0.89,-0.89);
-    Vec2 p12 = Vec2(0.89,0.89);
-    Vec2 p13 = Vec2(-0.89,0.89);
+    int a = 3;
+    Vec2 p10 = Vec2(-0.8,-0.8);
+    Vec2 p11 = Vec2(0.8,-0.8);
+    Vec2 p12 = Vec2(0.8,0.8);
+    Vec2 p13 = Vec2(-0.8,0.8);
 
     std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
     Triangulation *t = new Triangulation(points,points.size());
@@ -56,6 +56,7 @@ int main(int argn, char** argv){
     dgui->state->t = t;
     dgui->state->numT = t->tcount;
     dgui->state->numP = t->vcount;
+    dgui->state->futNumP = numP;
     dgui->state->td = td;
 
     glEnable( GL_PROGRAM_POINT_SIZE );
@@ -73,9 +74,15 @@ int main(int argn, char** argv){
 
             dgui->state->newTriagulationNeeded = false;
 
-            points = POINT_GENERATOR::gen_points_square(gstate->futNumP,p10,p11,p12,p13);
+            if (dgui->state->genGrid) {
+                points = POINT_GENERATOR::gen_points_grid((int)sqrt(gstate->futNumP), (int)sqrt(gstate->futNumP), p10, p11, p12, p13);
+            }
+            if (!dgui->state->genGrid) {
+                points = POINT_GENERATOR::gen_points_square(gstate->futNumP, p10, p11, p12, p13);
+            }
             t = new Triangulation(points,points.size());
             td = new TriangulationDrawer(t);
+            //std::cout << t->vcount << " " << t->edgecount << " " << t->oedgecount << " " << points.size() << std::endl;
             gstate->numP = t->vcount;
             gstate->numT = t->tcount;
         }
