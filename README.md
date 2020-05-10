@@ -50,9 +50,14 @@ This project have been run in Visual Studio 2019, but it should also work in Vis
 
 ### Installing
 
+You just need to open the project in visual studio, the libraries needed are included in the repository.
+
 ### Running
 
+To run the project you can do `ctrl+shift+B` to compile all the code (this might take a while as it compiles GLFW too), and then you have to select the `main.exe` executable in the top tool bar. 
+
 ## Running the tests
+As you selected the `main.exe` executable, you can select the `tests.exe` executable to run the tests.
 
 ## Built With
 
@@ -74,3 +79,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 * Thanks to https://www.gitignore.io/ for the generated .gitignore.
 * Thanks to [JoeyDeVries](https://learnopengl.com/Getting-started/Hello-Triangle) for the OpenGL tutorial, and the Shader class.
+* Thanks to Benjamin Mellado, for checking this homework Uwu.
