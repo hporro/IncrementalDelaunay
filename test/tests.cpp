@@ -15,7 +15,7 @@ std::vector<Vec2> points;
 
 //checks that every point is at the left or in every edge of the bounding triangle
 void test_isLeft(){
-    Triangulation t = Triangulation(points,points.size(),p0,p1,p2);
+    Triangulation t = Triangulation(points,points.size(),true);
     for(int i=3;i<points.size();i++){
         ASSERT_TRUE(isLeft(p2-p1,points[i]-p1));
         ASSERT_TRUE(isLeft(p1-p0,points[i]-p0));
@@ -25,7 +25,7 @@ void test_isLeft(){
 
 //checks that every triangle in the triangulation os ccw oriented
 void test_CCW(){
-    Triangulation t = Triangulation(points,points.size(),p0,p1,p2);
+    Triangulation t = Triangulation(points,points.size(),true);
     for(int f=0;f<t.tcount;f++){
         ASSERT_TRUE(t.isCCW(f));
     }
@@ -34,7 +34,7 @@ void test_CCW(){
 //checks that it finds only one triangle which contains a point
 //or one or two triangles which has it in a edge.
 void test_isInside(){
-    Triangulation t = Triangulation(points,points.size(),p0,p1,p2);
+    Triangulation t = Triangulation(points,points.size(),true);
     std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_triangle(2000,p0,p1,p2);
     for(int i=0;i<points2.size();i++){
         bool a = false;
@@ -52,7 +52,7 @@ void test_isInside(){
 
 //checks that all triangles are connected between them
 void test_all_connected(){
-    Triangulation t = Triangulation(points,points.size(),p0,p1,p2);
+    Triangulation t = Triangulation(points,points.size(),true);
     std::vector<int> q;
     q.push_back(0);
     int *visited = new int[t.tcount];
@@ -74,7 +74,7 @@ void test_all_connected(){
 
 //checks that each triangle is in it's triangle's neighbours list
 void test_check_integrity(){
-    Triangulation t = Triangulation(points,points.size(),p0,p1,p2);
+    Triangulation t = Triangulation(points,points.size(),true);
     for(int i=0;i<t.tcount;i++){
         ASSERT_TRUE(t.integrity(i));
     }
@@ -82,7 +82,7 @@ void test_check_integrity(){
 
 //checks that each triangle shares 2 vertices with its neighbours
 void test_sanity(){
-    Triangulation t = Triangulation(points,points.size(),p0,p1,p2);
+    Triangulation t = Triangulation(points,points.size(),true);
     for(int i=0;i<t.tcount;i++){
         ASSERT_TRUE(t.sanity(i));
     }
@@ -90,7 +90,7 @@ void test_sanity(){
 
 void all_points_check(){
     //std::cout << t.incount << " " << t.edgecount << " " << t.oedgecount << std::endl;
-    Triangulation t = Triangulation(points,points.size(),p0,p1,p2);
+    Triangulation t = Triangulation(points,points.size(),true);
     ASSERT_EQUALS(POINTS_NUMBER,t.incount+t.oedgecount+t.edgecount);
 }
 
@@ -102,7 +102,7 @@ void delaunay_test() {
     Vec2 p13 = Vec2(-800, 800);
     points = POINT_GENERATOR::gen_points_square(POINTS_NUMBER,p10,p11,p12,p13);
     //points = POINT_GENERATOR::gen_points_grid((int)sqrt(POINTS_NUMBER), (int)sqrt(POINTS_NUMBER), p10, p11, p12, p13);
-    Triangulation t = Triangulation(points, points.size(), p0, p1, p2);
+    Triangulation t = Triangulation(points, points.size(), true);
     for (int i = 0; i < t.tcount; i++) { // all triangles
         for (int j = 0; j < 3; j++) { // each triangle neighbour
             int tj = t.triangles[i].t[j];
@@ -126,7 +126,11 @@ void delaunay_test() {
 }
 
 int main(){
-    points = POINT_GENERATOR::gen_points_triangle(POINTS_NUMBER,p0,p1,p2);
+    Vec2 p10 = Vec2(-800, -800);
+    Vec2 p11 = Vec2(800, -800);
+    Vec2 p12 = Vec2(800, 800);
+    Vec2 p13 = Vec2(-800, 800);
+    points = POINT_GENERATOR::gen_points_square(POINTS_NUMBER,p10,p11,p12,p13);
     RUN(test_isLeft);
     RUN(test_CCW);
     RUN(test_check_integrity);

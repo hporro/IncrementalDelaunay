@@ -45,7 +45,7 @@ int main(int argn, char** argv){
     Vec2 p13 = Vec2(-0.8,0.8);
 
     std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
-    Triangulation *t = new Triangulation(points,points.size());
+    Triangulation *t = new Triangulation(points,points.size(),true);
     TriangulationDrawer *td = new TriangulationDrawer(t);
 
     // Gui for the program
@@ -80,7 +80,7 @@ int main(int argn, char** argv){
             if (!dgui->state->genGrid) {
                 points = POINT_GENERATOR::gen_points_square(gstate->futNumP, p10, p11, p12, p13);
             }
-            t = new Triangulation(points,points.size());
+            t = new Triangulation(points,points.size(),true);
             td = new TriangulationDrawer(t);
             //std::cout << t->vcount << " " << t->edgecount << " " << t->oedgecount << " " << points.size() << std::endl;
             gstate->numP = t->vcount;

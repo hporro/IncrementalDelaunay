@@ -81,11 +81,31 @@ bool Triangulation::isInEdge(int t, Vec2 p){
     return false;
 }
 
-Triangulation::Triangulation(std::vector<Vec2> points, int numP) {
-    Vec2 p0 = Vec2(-0.9,-0.9);
-    Vec2 p1 = Vec2(0.9,-0.9);
-    Vec2 p2 = Vec2(0.9,0.9);
-    Vec2 p3 = Vec2(-0.9,0.9);
+Triangulation::Triangulation(std::vector<Vec2> points, int numP, bool logSearch = true) :  doLogSearch(logSearch) {
+    
+    float minx = 100000;
+    float miny = 100000;
+    float maxx =-100000;
+    float maxy =-100000;
+
+    for(auto p: points){
+        minx = std::min(minx,p.x);
+        miny = std::min(miny,p.y);
+        maxx = std::max(maxx,p.x);
+        maxy = std::max(maxy,p.y);
+    }
+    
+    a = std::max(maxx-minx,maxy-miny);
+
+    Vec2 p0 = Vec2(minx,miny) + Vec2(-a/10,-a/10);
+    Vec2 p1 = p0 + Vec2(a+2*a/10,0);
+    Vec2 p2 = p0 + Vec2(a+2*a/10,a+2*a/10);
+    Vec2 p3 = p0 + Vec2(0,a+2*a/10);
+
+    pox = p0.x;
+    poy = p0.y;
+    a+=2*a/10;
+
     maxVertices = numP+6;
     maxTriangles = numP*2+7;
     vertices = new Vertex[numP+6]; // num of vertices
@@ -112,25 +132,6 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP) {
     }
 }
 
-Triangulation::Triangulation(std::vector<Vec2> points, int numP, Vec2 p0, Vec2 p1, Vec2 p2) {
-    maxTriangles = numP*2+1;
-    maxVertices = numP+3;
-    vertices = new Vertex[numP+3]; // num of vertices
-    triangles = new Triangle[numP*2+1]; // 2(n+3) - 2 - 3 = 2n+1 // num of faces
-
-    vertices[0] = Vertex(p0);
-    vertices[1] = Vertex(p1);
-    vertices[2] = Vertex(p2);
-    triangles[0] = Triangle(0,1,2,-1,-1,-1);
-    assert(isCCW(0));
-
-    vcount = 3;
-    tcount = 1;
-
-    for(int i=0;i<points.size();i++){
-        addPoint(points[i]);
-    }
-}
 bool Triangulation::integrity(int t){
     int t0 = triangles[t].t[0];
     int t1 = triangles[t].t[1];
@@ -272,8 +273,9 @@ void Triangulation::addPoint(Vec2 p){
     );
 #endif
     Vec2 initialPoint = (vertices[triangles[nextToMinOne].v[0]].pos+vertices[triangles[nextToMinOne].v[1]].pos+vertices[triangles[nextToMinOne].v[2]].pos)/3;
-    int tri_index = findContainerTriangleLogSearch(p,initialPoint,nextToMinOne,-1);
-    //int tri_index = findContainerTriangleLinearSearch(p);
+    int tri_index;
+    if(doLogSearch) tri_index = findContainerTriangleLogSearch(p,initialPoint,nextToMinOne,-1);
+    else tri_index = findContainerTriangleLinearSearch(p);
     if(tri_index!=-1){
         this->incount++;
         addPointInside(p,tri_index);

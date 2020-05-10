@@ -70,6 +70,9 @@ public:
 
     void draw_points(){
         sh.use();
+        sh.setFloat("a",t->a);
+        sh.setFloat("pox",t->pox);
+        sh.setFloat("poy",t->poy);
         sh.setVec3("aColor",glm::vec3(1-color[0],1-color[1],1-color[2]));
         glBindVertexArray(vao);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
