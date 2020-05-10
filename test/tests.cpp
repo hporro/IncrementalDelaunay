@@ -7,9 +7,9 @@
 
 #define POINTS_NUMBER 1000 // set the number of points will have the test triangulation
 
-Vec2 p0 = Vec2(-0.89,-0.89);
-Vec2 p1 = Vec2(0.89,-0.89);
-Vec2 p2 = Vec2(0.0,0.89);
+Vec2 p0 = Vec2(-89,-89);
+Vec2 p1 = Vec2(89,-89);
+Vec2 p2 = Vec2(0,89);
 
 std::vector<Vec2> points;
 
@@ -96,11 +96,12 @@ void all_points_check(){
 
 //checks that all edges obey the delaunay test
 void delaunay_test() {
-    Vec2 p10 = Vec2(-0.8, -0.8);
-    Vec2 p11 = Vec2(0.8, -0.8);
-    Vec2 p12 = Vec2(0.8, 0.8);
-    Vec2 p13 = Vec2(-0.8, 0.8);
-    points = POINT_GENERATOR::gen_points_grid((int)sqrt(POINTS_NUMBER), (int)sqrt(POINTS_NUMBER), p10, p11, p12, p13);
+    Vec2 p10 = Vec2(-800, -800);
+    Vec2 p11 = Vec2(800, -800);
+    Vec2 p12 = Vec2(800, 800);
+    Vec2 p13 = Vec2(-800, 800);
+    points = POINT_GENERATOR::gen_points_square(POINTS_NUMBER,p10,p11,p12,p13);
+    //points = POINT_GENERATOR::gen_points_grid((int)sqrt(POINTS_NUMBER), (int)sqrt(POINTS_NUMBER), p10, p11, p12, p13);
     Triangulation t = Triangulation(points, points.size(), p0, p1, p2);
     for (int i = 0; i < t.tcount; i++) { // all triangles
         for (int j = 0; j < 3; j++) { // each triangle neighbour
@@ -117,7 +118,7 @@ void delaunay_test() {
                     Vec2 c = t.vertices[t.triangles[i].v[2]].pos;
                     Vec2 d = t.vertices[vj].pos;
                     float ff = inCircle(a, b, c, d);
-                    ASSERT_TRUE(ff<0.0001);
+                    ASSERT_TRUE(ff<0.01);
                 }
             }
         }

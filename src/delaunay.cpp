@@ -279,9 +279,9 @@ void Triangulation::addPoint(Vec2 p){
         addPointInside(p,tri_index);
         int a = tri_index,b=tcount-1,c=tcount-2;
         for (int i = 0; i < 3; i++) {
-            if (triangles[a].t[i] != b && triangles[a].t[i] != c)legalize(a, triangles[a].t[i]);
-            if (triangles[b].t[i] != a && triangles[b].t[i] != c)legalize(b, triangles[b].t[i]);
-            if (triangles[c].t[i] != b && triangles[c].t[i] != a)legalize(c, triangles[c].t[i]);
+            legalize(a, triangles[a].t[i]);
+            legalize(b, triangles[b].t[i]);
+            legalize(c, triangles[c].t[i]);
         }
         return;
     }
@@ -345,10 +345,9 @@ void Triangulation::legalize(int t1, int t2){
     for(int i=0;i<3;i++){
         if((a[i]!=b[4]) && (a[i]!=b[5]) && (a[i]!=b[6])) b[7] = a[i];
     }
-    if(inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)>-IN_CIRCLE_EPS ||
-    inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos)>-IN_CIRCLE_EPS) {
+    if(inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)>0.000001 &&
+    inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos)>0.00000001) {
         flip(t1,t2);
-
     }
 }
 void Triangulation::addPointInEdge(Vec2 v, int t1, int t2){
@@ -590,9 +589,12 @@ void Triangulation::flip(int t1, int t2){
     assert(isCCW(t1)&&isCCW(t2));
     assert(frontTest(t1)&&frontTest(t2));
 #endif
-    //std::cout << "flip done" << std::endl;
     updateNextToMinOne(t1);
     updateNextToMinOne(t2);
+    legalize(t2,f20);
+    legalize(t2,f22);
+    legalize(t1,f10);
+    legalize(t1,f12);
 }
 
 Triangulation::~Triangulation(){
