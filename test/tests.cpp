@@ -13,16 +13,6 @@ Vec2 p2 = Vec2(0,89);
 
 std::vector<Vec2> points;
 
-//checks that every point is at the left or in every edge of the bounding triangle
-void test_isLeft(){
-    Triangulation t = Triangulation(points,points.size(),true);
-    for(int i=3;i<points.size();i++){
-        ASSERT_TRUE(isLeft(p2-p1,points[i]-p1));
-        ASSERT_TRUE(isLeft(p1-p0,points[i]-p0));
-        ASSERT_TRUE(isLeft(p0-p2,points[i]-p2));
-    }
-}
-
 //checks that every triangle in the triangulation os ccw oriented
 void test_CCW(){
     Triangulation t = Triangulation(points,points.size(),true);
@@ -95,11 +85,12 @@ void all_points_check(){
 }
 
 //checks that all edges obey the delaunay test
+//might fail somethimes due to floating point issues
 void delaunay_test() {
-    Vec2 p10 = Vec2(-800, -800);
-    Vec2 p11 = Vec2(800, -800);
-    Vec2 p12 = Vec2(800, 800);
-    Vec2 p13 = Vec2(-800, 800);
+    Vec2 p10 = Vec2(-0.8,-0.8);
+    Vec2 p11 = Vec2(0.8,-0.8);
+    Vec2 p12 = Vec2(0.8,0.8);
+    Vec2 p13 = Vec2(-0.8,0.8);
     points = POINT_GENERATOR::gen_points_square(POINTS_NUMBER,p10,p11,p12,p13);
     //points = POINT_GENERATOR::gen_points_grid((int)sqrt(POINTS_NUMBER), (int)sqrt(POINTS_NUMBER), p10, p11, p12, p13);
     Triangulation t = Triangulation(points, points.size(), true);
@@ -118,7 +109,7 @@ void delaunay_test() {
                     Vec2 c = t.vertices[t.triangles[i].v[2]].pos;
                     Vec2 d = t.vertices[vj].pos;
                     float ff = inCircle(a, b, c, d);
-                    ASSERT_TRUE(ff<0.01);
+                    ASSERT_TRUE(ff<0.001);
                 }
             }
         }
@@ -131,7 +122,6 @@ int main(){
     Vec2 p12 = Vec2(800, 800);
     Vec2 p13 = Vec2(-800, 800);
     points = POINT_GENERATOR::gen_points_square(POINTS_NUMBER,p10,p11,p12,p13);
-    RUN(test_isLeft);
     RUN(test_CCW);
     RUN(test_check_integrity);
     RUN(test_all_connected);

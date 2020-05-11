@@ -102,10 +102,6 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP, bool logSearch 
     Vec2 p2 = p0 + Vec2(a+2*a/10,a+2*a/10);
     Vec2 p3 = p0 + Vec2(0,a+2*a/10);
 
-    pox = p0.x;
-    poy = p0.y;
-    a+=2*a/10;
-
     maxVertices = numP+6;
     maxTriangles = numP*2+7;
     vertices = new Vertex[numP+6]; // num of vertices
@@ -158,8 +154,6 @@ bool Triangulation::frontTest(int t){ // checks that every point is in the same 
     return res;
 }
 void Triangulation::addPointInside(Vec2 v, int tri_index){
-    //std::cout << "Insert inside: " << tri_index << std::endl;
-
     int f = tri_index;
     int f1 = tcount++;
     int f2 = tcount++;
@@ -287,39 +281,6 @@ void Triangulation::addPoint(Vec2 p){
         }
         return;
     }
-    
-    /*int t1=-1,t2=-1;
-    for(int i=0;i<tcount;i++){
-        if((t1 == -1) && isInEdge(i,p)){
-            t1 = i;
-            continue;
-        }
-        if((t2 == -1) && isInEdge(i,p)){
-            t2 = i;
-        }
-    }
-    if((t1!=-1) && (t2!=-1)){
-        this->edgecount++;
-        addPointInEdge(p,t1,t2);
-        //legalize(t1,t2);
-        //legalize(t1,tcount-2);
-        //legalize(tcount-1,tcount-2);
-        //legalize(t2,tcount-1);
-        return;
-    }
-    else if((t1!=-1) && (t2==-1)){
-        this->oedgecount++;
-        addPointInEdge(p,t1);
-        //int aa=-1,bb=-1;
-        //for(int i=0;i<3;i++){
-        //    if(triangles[t1].t[i]!=-1 && triangles[t1].t[i]!=(tcount-1))aa=triangles[t1].t[i];
-        //}
-        //for(int i=0;i<3;i++){
-        //    if(triangles[(tcount-1)].t[i]!=-1 && triangles[(tcount-1)].t[i]!=t1)bb=triangles[(tcount-1)].t[i];
-        //}
-        //legalize(t1,aa);
-        //legalize(tcount-1,bb);
-    }*/
 }
 
 void Triangulation::legalize(int t1, int t2){
@@ -440,10 +401,6 @@ void Triangulation::addPointInEdge(Vec2 v, int t){
         triangles[f2].t[1] = (triangles[f2].t[1] == t ? t1 : triangles[f2].t[1]);
         triangles[f2].t[2] = (triangles[f2].t[2] == t ? t1 : triangles[f2].t[2]);
     }
-    //std::cout << t << ": " << triangles[t].t[0] << " " << triangles[t].t[1] << " " << triangles[t].t[2] << std::endl;
-    //std::cout << t1 << ": " << triangles[t1].t[0] << " " << triangles[t1].t[1] << " " << triangles[t1].t[2] << std::endl;
-    //std::cout << t << ": " << triangles[t].v[0] << " " << triangles[t].v[1] << " " << triangles[t].v[2] << std::endl;
-    //std::cout << t1 << ": " << triangles[t1].v[0] << " " << triangles[t1].v[1] << " " << triangles[t1].v[2] << std::endl;
 #if ASSERT_PROBLEMS
     assert(isCCW(t)&&isCCW(t1));
     assert(areConnected(t,t1));
@@ -504,7 +461,6 @@ void Triangulation::flip(int t1, int t2){
     assert(integrity(t1)&&integrity(t2));
     assert(frontTest(t1)&&frontTest(t2));
 #endif
-    //std::cout << "Flip between: " << t1 << " " << t2 << std::endl;
 
     int p10,p11,p12,p20,p21,p22;
     int f10,f11,f12,f20,f21,f22;
@@ -559,9 +515,6 @@ void Triangulation::flip(int t1, int t2){
         f21 = triangles[t2].t[0];
         f22 = triangles[t2].t[1];
     }
-
-    //std::cout << p11 << " " << p22 << std::endl;
-    //std::cout << p12 << " " << p21 << std::endl;
 
     triangles[t1].t[0] = t2;
     triangles[t1].t[1] = f12;

@@ -82,7 +82,6 @@ int main(int argn, char** argv){
             }
             t = new Triangulation(points,points.size(),true);
             td = new TriangulationDrawer(t);
-            //std::cout << t->vcount << " " << t->edgecount << " " << t->oedgecount << " " << points.size() << std::endl;
             gstate->numP = t->vcount;
             gstate->numT = t->tcount;
         }

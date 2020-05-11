@@ -75,8 +75,6 @@ namespace POINT_GENERATOR {
         for(int i=0;i<x;i++){
             for(int j=0;j<y;j++){
                 points[i*y+j] = p0 + (p1-p0)*(((float)i)/x) + (p2-p1)*((float)j/y);
-                //points[i*y+j].x += lildist(rng);
-                //points[i*y+j].y += lildist(rng);
             }
         }
         return points;
