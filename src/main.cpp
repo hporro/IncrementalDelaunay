@@ -12,6 +12,50 @@ static void glfw_error_callback(int error, const char* description){
     std::cerr << "Glfw Error "<< error << ": " << description << std::endl;
 }
 
+GUIState* gstate = new GUIState();
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    gstate->zoom += yoffset==1?0.1:-0.1;
+    if(gstate->zoom <= 0.1) gstate->zoom = 0.1;
+}
+
+
+double press_pos[2];
+double release_pos[2];
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
+        glfwGetCursorPos(window, press_pos, press_pos+1);
+    }
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE){
+        glfwGetCursorPos(window, release_pos, release_pos+1);
+        int width, height;
+        glfwGetWindowSize(window, &width, &height);
+
+        gstate->offset[0] -= ((float)(press_pos[0]-release_pos[0]))/width;
+        gstate->offset[1] += ((float)(press_pos[1]-release_pos[1]))/height;
+    }
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    float off = 0.2;
+    if (key == GLFW_KEY_W && action == GLFW_PRESS){
+        gstate->offset[1] -= off;
+    }
+    if (key == GLFW_KEY_A && action == GLFW_PRESS){
+        gstate->offset[0] += off;
+    }
+    if (key == GLFW_KEY_S && action == GLFW_PRESS){
+        gstate->offset[1] += off;
+    }
+    if (key == GLFW_KEY_D && action == GLFW_PRESS){
+        gstate->offset[0] -= off;
+    }
+}
+
 int main(int argn, char** argv){
     // Setup window
     glfwSetErrorCallback(glfw_error_callback);
@@ -28,6 +72,9 @@ int main(int argn, char** argv){
         return 1;
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
+    glfwSetScrollCallback(window, scroll_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetKeyCallback(window, key_callback);
 
     // Initialize OpenGL loader
     bool err = gl3wInit() != 0;
@@ -39,17 +86,16 @@ int main(int argn, char** argv){
 
     int numP = 1000;
     int a = 3;
-    Vec2 p10 = Vec2(-100,-100);
-    Vec2 p11 = Vec2(100,-100);
-    Vec2 p12 = Vec2(100,100);
-    Vec2 p13 = Vec2(-100,100);
+    Vec2 p10 = Vec2(-0.8,-0.8);
+    Vec2 p11 = Vec2(0.8,-0.8);
+    Vec2 p12 = Vec2(0.8,0.8);
+    Vec2 p13 = Vec2(-0.8,0.8);
 
     std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
     Triangulation *t = new Triangulation(points,points.size(),true);
     TriangulationDrawer *td = new TriangulationDrawer(t);
 
     // Gui for the program
-    GUIState* gstate = new GUIState();
     DelaunayGUI* dgui = new DelaunayGUI();
     dgui->state = gstate;
     dgui->init(window);
