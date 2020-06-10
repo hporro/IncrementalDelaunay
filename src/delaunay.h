@@ -37,13 +37,13 @@ public:
     Vertex *vertices;
     Triangle *triangles;
 
-    void addPoint(Vec2 point);
+    void delaunayInsertion(Vec2 point);
     void addPointInside(Vec2 point,int);
     void addPointInEdge(Vec2 point, int t1, int t2);
     void addPointInEdge(Vec2 point, int t);
     void flip(int t1, int t2);
     int findContainerTriangleLinearSearch(Vec2 p);
-    int findContainerTriangleLogSearch(Vec2 p, Vec2 initialPoint, int prop, int cameFrom);
+    int findContainerTriangleSqrtSearch(Vec2 p, Vec2 initialPoint, int prop, int cameFrom);
     int findCHTriangle(int guess);
 
     bool isInside(int t, Vec2); //checks if a Vec2 is inside the triangle in the index t
@@ -73,8 +73,7 @@ public:
     bool doLogSearch = true;
 
     float a;
-    float pox;
-    float poy;
+    Vec2 p0,p1,p2,p3;
 };
 
 double crossa(Vec2 a, Vec2 b);

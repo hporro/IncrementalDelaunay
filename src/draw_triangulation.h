@@ -60,19 +60,28 @@ public:
         glBindVertexArray(0);
     }
 
-    void draw(){
+    void draw(float offset[2], float zoom){
         sh.use();
+        sh.setFloat("zoom",zoom);
+        sh.setVec2("offset",glm::vec2(offset[0],offset[1]));
+        sh.setVec2("p0",t->p0);
+        sh.setVec2("p1",t->p1);
+        sh.setVec2("p2",t->p2);
+        sh.setVec2("p3",t->p3);
         sh.setVec3("aColor",glm::vec3(color[0],color[1],color[2]));
         glBindVertexArray(vao);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glDrawElements(GL_TRIANGLES,t->tcount*3,GL_UNSIGNED_INT, 0);
     }
 
-    void draw_points(){
+    void draw_points(float offset[2], float zoom){
         sh.use();
-        sh.setFloat("a",t->a);
-        sh.setFloat("pox",t->pox);
-        sh.setFloat("poy",t->poy);
+        sh.setFloat("zoom",zoom);
+        sh.setVec2("offset",glm::vec2(offset[0],offset[1]));
+        sh.setVec2("p0",t->p0);
+        sh.setVec2("p1",t->p1);
+        sh.setVec2("p2",t->p2);
+        sh.setVec2("p3",t->p3);
         sh.setVec3("aColor",glm::vec3(1-color[0],1-color[1],1-color[2]));
         glBindVertexArray(vao);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

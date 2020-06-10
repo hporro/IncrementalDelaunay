@@ -5,38 +5,7 @@
 
 #include <queue>
 
-//HELPER FUNCTIONS
-double crossa(Vec2 a, Vec2 b){
-    return a.x*b.y-a.y*b.x;
-}
-
-bool isLeft(Vec2 a, Vec2 b){
-    return crossa(a,b) > IN_TRIANGLE_EPS;
-}
-
-bool isRight(Vec2 a, Vec2 b){
-    return crossa(a,b) < IN_TRIANGLE_EPS;
-}
-
-bool mightBeLeft(Vec2 a, Vec2 b){
-    return crossa(a,b) >= -IN_TRIANGLE_EPS;
-}
-
-template<class T>
-T amin(T a, T b){
-    if(a<b)return a;
-    return b;
-}
-
-double det(double a, double b, double c, double d, double e, double f, double g, double h, double i){
-    return a*(e*i-f*h)-b*(d*i-f*g)+c*(d*h-e*g);
-}
-
-double inCircle(Vec2 a, Vec2 b, Vec2 c, Vec2 d){
-    return det( a.x-d.x,a.y-d.y,(a.x-d.x)*(a.x-d.x)+(a.y-d.y)*(a.y-d.y),
-                b.x-d.x,b.y-d.y,(b.x-d.x)*(b.x-d.x)+(b.y-d.y)*(b.y-d.y),
-                c.x-d.x,c.y-d.y,(c.x-d.x)*(c.x-d.x)+(c.y-d.y)*(c.y-d.y));
-}
+#include "utils.h"
 
 //VERTEX IMPL
 Vertex::Vertex(Vec2 v, int t) : pos(v), tri_index(t){}
@@ -97,10 +66,10 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP, bool logSearch 
     
     a = std::max(maxx-minx,maxy-miny);
 
-    Vec2 p0 = Vec2(minx,miny) + Vec2(-a/10,-a/10);
-    Vec2 p1 = p0 + Vec2(a+2*a/10,0);
-    Vec2 p2 = p0 + Vec2(a+2*a/10,a+2*a/10);
-    Vec2 p3 = p0 + Vec2(0,a+2*a/10);
+    p0 = Vec2(minx,miny) + Vec2(-a/10,-a/10);
+    p1 = p0 + Vec2(a+2*a/10,0);
+    p2 = p0 + Vec2(a+2*a/10,a+2*a/10);
+    p3 = p0 + Vec2(0,a+2*a/10);
 
     maxVertices = numP+6;
     maxTriangles = numP*2+7;
@@ -124,7 +93,7 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP, bool logSearch 
 #endif
 
     for(int i=0;i<points.size();i++){
-        addPoint(points[i]);
+        delaunayInsertion(points[i]);
     }
 }
 
@@ -222,7 +191,7 @@ double dist2(Vec2 a,Vec2 b){
     return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
 }
 
-int Triangulation::findContainerTriangleLogSearch(Vec2 p, Vec2 initialPoint, int prop, int cameFrom){
+int Triangulation::findContainerTriangleSqrtSearch(Vec2 p, Vec2 initialPoint, int prop, int cameFrom){
     if(isInside(prop,p))return prop;
 
     int *visited = new int[tcount];
@@ -258,7 +227,7 @@ int Triangulation::findContainerTriangleLogSearch(Vec2 p, Vec2 initialPoint, int
     return -1;
 }
 
-void Triangulation::addPoint(Vec2 p){
+void Triangulation::delaunayInsertion(Vec2 p){
 #if ASSERT_PROBLEMS
     assert(
         triangles[nextToMinOne].t[0]==-1 ||
@@ -268,7 +237,7 @@ void Triangulation::addPoint(Vec2 p){
 #endif
     Vec2 initialPoint = (vertices[triangles[nextToMinOne].v[0]].pos+vertices[triangles[nextToMinOne].v[1]].pos+vertices[triangles[nextToMinOne].v[2]].pos)/3;
     int tri_index;
-    if(doLogSearch) tri_index = findContainerTriangleLogSearch(p,initialPoint,nextToMinOne,-1);
+    if(doLogSearch) tri_index = findContainerTriangleSqrtSearch(p,initialPoint,nextToMinOne,-1);
     else tri_index = findContainerTriangleLinearSearch(p);
     if(tri_index!=-1){
         this->incount++;

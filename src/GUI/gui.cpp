@@ -37,6 +37,8 @@ void DelaunayGUI::draw(){
         {
             ImGui::Begin("Options",&state->optionsActive,ImGuiWindowFlags_MenuBar);
             ImGui::Text("Triangulation visual options");
+            ImGui::SliderFloat("Zoom", &state->zoom,0.1,10.0);
+            ImGui::SliderFloat2("Offset", state->offset, -10.0, 10.0);
             ImGui::ColorEdit3("Color",state->triangulation_color);
             ImGui::Checkbox("Show Points",&state->ShowPoints);
             ImGui::InputInt("Point Size",&state->PointSize);

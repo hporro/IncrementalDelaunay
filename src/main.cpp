@@ -39,10 +39,10 @@ int main(int argn, char** argv){
 
     int numP = 1000;
     int a = 3;
-    Vec2 p10 = Vec2(-0.8,-0.8);
-    Vec2 p11 = Vec2(0.8,-0.8);
-    Vec2 p12 = Vec2(0.8,0.8);
-    Vec2 p13 = Vec2(-0.8,0.8);
+    Vec2 p10 = Vec2(-100,-100);
+    Vec2 p11 = Vec2(100,-100);
+    Vec2 p12 = Vec2(100,100);
+    Vec2 p13 = Vec2(-100,100);
 
     std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
     Triangulation *t = new Triangulation(points,points.size(),true);
@@ -87,9 +87,9 @@ int main(int argn, char** argv){
         }
         glPointSize(dgui->state->PointSize);
         td->setColor(dgui->state->triangulation_color);
-        td->draw();
+        td->draw(dgui->state->offset,dgui->state->zoom);
         if(dgui->state->ShowPoints)
-            td->draw_points();
+            td->draw_points(dgui->state->offset,dgui->state->zoom);
         glfwGetCursorPos(window, &dgui->state->xpos, &dgui->state->ypos);
         dgui->draw();
         dgui->render();

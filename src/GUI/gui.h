@@ -22,6 +22,8 @@ public:
 
     bool newTriagulationNeeded = false;
     bool genGrid = true;
+    float offset[2] = {0.0,0.0};
+    float zoom = 1;
 };
 
 class DelaunayGUI {
