@@ -21,7 +21,8 @@ public:
     bool ShowPoints = false;
 
     bool newTriagulationNeeded = false;
-    bool genGrid = true;
+    bool genGrid = false;
+    bool centroidAll = false;
     float offset[2] = {0.0,0.0};
     float zoom = 1;
 };

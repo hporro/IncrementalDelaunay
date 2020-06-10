@@ -47,6 +47,9 @@ void DelaunayGUI::draw(){
             if(ImGui::Button("New Triangulation")){
                 state->newTriagulationNeeded = true;
             }
+            if(ImGui::Button("Centroid All")){
+                state->centroidAll = true;
+            }
             ImGui::Checkbox("Points in grid", &state->genGrid);
             ImGui::End();
         }

@@ -78,6 +78,8 @@ public:
     // ---------------------- T2 --------------------
     int calcLongestEdge(int t); // gives the int corresponding to the opposite vertex of the longest edge of a triangle
     std::vector<int> calcLepp(int t);
+    void centroidAll(float angle);
+    void addCentroids();
 };
 
 double crossa(Vec2 a, Vec2 b);

@@ -4,6 +4,7 @@
 #include "constants.h"
 
 #include <queue>
+#include <algorithm>
 
 #include "utils.h"
 
@@ -73,8 +74,8 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP, bool logSearch 
 
     maxVertices = numP+6;
     maxTriangles = numP*2+7;
-    vertices = new Vertex[numP+6]; // num of vertices
-    triangles = new Triangle[numP*2+7]; // 2(n+6) - 2 - 3 = 2n+7 // num of faces
+    vertices = new Vertex[maxVertices]; // num of vertices
+    triangles = new Triangle[maxTriangles]; // 2(n+6) - 2 - 3 = 2n+7 // num of faces
 
     vertices[0] = Vertex(p0);
     vertices[1] = Vertex(p1);
@@ -235,6 +236,25 @@ void Triangulation::delaunayInsertion(Vec2 p){
         triangles[nextToMinOne].t[2]==-1
     );
 #endif
+
+    if(tcount == maxTriangles-1){ // we must get more space
+        //std::cout << "al triangulos" << std::endl;
+        Triangle *newTriangles = new Triangle[maxTriangles*maxTriangles];
+        std::copy(triangles,triangles+tcount,newTriangles);
+        delete[] triangles;
+        triangles = newTriangles;
+        maxTriangles *= maxTriangles;
+    }
+
+    if(vcount == maxVertices-1){ // we must get more space
+        //std::cout << "al vertices" << std::endl;
+        Vertex *newVertices = new Vertex[maxVertices*maxVertices];
+        std::copy(vertices,vertices+vcount,newVertices);
+        delete[] vertices;
+        vertices = newVertices;
+        maxVertices *= maxVertices;
+    }
+
     Vec2 initialPoint = (vertices[triangles[nextToMinOne].v[0]].pos+vertices[triangles[nextToMinOne].v[1]].pos+vertices[triangles[nextToMinOne].v[2]].pos)/3;
     int tri_index;
     if(doLogSearch) tri_index = findContainerTriangleSqrtSearch(p,initialPoint,nextToMinOne,-1);
@@ -560,15 +580,56 @@ std::vector<int> Triangulation::calcLepp(int t){
     std::vector<int> res;
     int currt = t;
     res.push_back(currt);
-    do{
-        int currt = triangles[currt].t[calcLongestEdge(currt)];
+    while(true){
+        int currt = triangles[res[res.size()-1]].t[calcLongestEdge(res[res.size()-1])];
         res.push_back(currt);
-        std::cout << currt << std::endl;
-        if(currt == -1) break;
-        if((res.size()>3) && (res[res.size()-1] == res[res.size()-3])) break;
-    } while(
-        (calcLongestEdge(res[res.size()-1])!=calcLongestEdge(res[res.size()-2]))
-    );
+        if(res[res.size()-1] == -1) break;
+        if((res.size()>2) && (res[res.size()-1] == res[res.size()-3])){
+            res.pop_back();
+            break;
+        }
+    }
     return res;
 }
 
+void Triangulation::centroidAll(float angle){
+    int actTcount = tcount;
+    for(int i=0;i<actTcount;i++){
+        std::vector<int> le = calcLepp(i);
+        // for(int j=0;j<le.size();j++){
+        //     std::cout << le[j] << " ";
+        // }std::cout << std::endl;
+
+        int f1 = le[le.size()-1],f2 = le[le.size()-2];
+
+        if(f1==-1 || f2 ==-1) continue;
+
+        int points[4];
+        points[0] = triangles[f1].v[0];
+        points[1] = triangles[f1].v[1];
+        points[2] = triangles[f1].v[2];
+        points[3] = -1;
+        for(int j=0;j<3;j++){
+            int p = triangles[f2].v[j];
+            bool isDiff = true;
+            for(int k=0;k<3;k++){
+                if(points[k]==p)isDiff=false;
+            }
+            if(isDiff)points[3] = p;
+        }
+
+        //if(points[3]==-1)continue;
+
+        Vec2 p = (vertices[points[0]].pos+vertices[points[1]].pos+vertices[points[2]].pos+vertices[points[3]].pos)/4;
+
+        delaunayInsertion(p);
+    }
+}
+
+void Triangulation::addCentroids(){
+    int actTcount = tcount;
+    for(int i=0;i<actTcount;i++){
+        Vec2 p = (vertices[triangles[i].v[0]].pos + vertices[triangles[i].v[1]].pos + vertices[triangles[i].v[2]].pos)/3;
+        delaunayInsertion(p);
+    }
+}
