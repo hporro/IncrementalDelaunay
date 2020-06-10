@@ -74,6 +74,10 @@ public:
 
     float a;
     Vec2 p0,p1,p2,p3;
+
+    // ---------------------- T2 --------------------
+    int calcLongestEdge(int t); // gives the int corresponding to the opposite vertex of the longest edge of a triangle
+    std::vector<int> calcLepp(int t);
 };
 
 double crossa(Vec2 a, Vec2 b);

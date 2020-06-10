@@ -30,3 +30,8 @@ double inCircle(Vec2 a, Vec2 b, Vec2 c, Vec2 d){
                 b.x-d.x,b.y-d.y,(b.x-d.x)*(b.x-d.x)+(b.y-d.y)*(b.y-d.y),
                 c.x-d.x,c.y-d.y,(c.x-d.x)*(c.x-d.x)+(c.y-d.y)*(c.y-d.y));
 }
+
+//gives the square of the length of a Vec2
+double sqrtLength(Vec2 v){
+    return v.x*v.x + v.y*v.y;
+}

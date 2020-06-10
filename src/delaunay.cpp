@@ -540,3 +540,35 @@ bool Triangulation::sanity(int t){
     }
     return true;
 }
+
+// -------------------------- T2 ------------------------------
+
+int Triangulation::calcLongestEdge(int t){
+    int longestEdge = 0;
+    double longestEdgeSqrtLength = sqrtLength(vertices[triangles[t].v[1]].pos-vertices[triangles[t].v[2]].pos);
+    for(int i=1;i<3;i++){
+        double length = sqrtLength(vertices[triangles[t].v[(i+1)%3]].pos-vertices[triangles[t].v[(i+2)%3]].pos);
+        if(length>longestEdgeSqrtLength){
+            longestEdgeSqrtLength = length;
+            longestEdge = i;
+        }
+    }
+    return longestEdge;
+}
+
+std::vector<int> Triangulation::calcLepp(int t){
+    std::vector<int> res;
+    int currt = t;
+    res.push_back(currt);
+    do{
+        int currt = triangles[currt].t[calcLongestEdge(currt)];
+        res.push_back(currt);
+        std::cout << currt << std::endl;
+        if(currt == -1) break;
+        if((res.size()>3) && (res[res.size()-1] == res[res.size()-3])) break;
+    } while(
+        (calcLongestEdge(res[res.size()-1])!=calcLongestEdge(res[res.size()-2]))
+    );
+    return res;
+}
+

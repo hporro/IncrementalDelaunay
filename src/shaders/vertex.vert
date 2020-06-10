@@ -17,7 +17,8 @@ void main()
 
     a = max(a,b);
 
-    float posx = ((aPos.x - p0.x)/a - 0.5)*2*zoom + offset.x;
-    float posy = ((aPos.y - p0.y)/a - 0.5)*2*zoom + offset.y;
+    float posx = (((aPos.x - p0.x)/a - 0.5)*2 + offset.x)*zoom;
+    float posy = (((aPos.y - p0.y)/a - 0.5)*2 + offset.y)*zoom;
+
     gl_Position = vec4(posx, posy, 0, 1.0);
 }

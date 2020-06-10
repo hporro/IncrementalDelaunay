@@ -86,6 +86,7 @@ int main(int argn, char** argv){
 
     int numP = 1000;
     int a = 3;
+
     Vec2 p10 = Vec2(-0.8,-0.8);
     Vec2 p11 = Vec2(0.8,-0.8);
     Vec2 p12 = Vec2(0.8,0.8);
@@ -104,6 +105,12 @@ int main(int argn, char** argv){
     dgui->state->numP = t->vcount;
     dgui->state->futNumP = numP;
     dgui->state->td = td;
+
+
+    std::vector<int> le = t->calcLepp(100);
+    for(int i=0;i<le.size();i++){
+        std::cout << le[i] << " ";
+    }std::cout << std::endl;
 
     glEnable( GL_PROGRAM_POINT_SIZE );
     // Main loop
