@@ -80,6 +80,7 @@ public:
     std::vector<int> calcLepp(int t);
     void centroidAll(float angle);
     void addCentroids();
+    void longestEdgeBisect(int t);
 };
 
 double crossa(Vec2 a, Vec2 b);

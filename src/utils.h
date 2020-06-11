@@ -1,3 +1,5 @@
+#include <algorithm>
+
 //HELPER FUNCTIONS
 double crossa(Vec2 a, Vec2 b){
     return a.x*b.y-a.y*b.x;
@@ -34,4 +36,33 @@ double inCircle(Vec2 a, Vec2 b, Vec2 c, Vec2 d){
 //gives the square of the length of a Vec2
 double sqrtLength(Vec2 v){
     return v.x*v.x + v.y*v.y;
+}
+
+double dot(Vec2 a, Vec2 b){
+    return a.x*b.x + a.y*b.y;
+}
+
+bool pointInSegment(Vec2 p, Vec2 p1, Vec2 p2){
+    if(p1==p2) return false;
+    if(p.x < std::min(p1.x,p2.x) + IN_TRIANGLE_EPS) return false;
+    if(p.x > std::max(p1.x,p2.x) + IN_TRIANGLE_EPS) return false;
+    if(p.y < std::min(p1.y,p2.y) + IN_TRIANGLE_EPS) return false;
+    if(p.y > std::max(p1.y,p2.y) + IN_TRIANGLE_EPS) return false;
+
+    Vec2 a = p1-p2;
+    Vec2 n = Vec2(-a.y,a.x);
+
+    return abs(dot(p-p1,n)) > IN_TRIANGLE_EPS;
+}
+
+Vec2 operator/(Vec2 v, float a){
+    return Vec2(v.x/a,v.y/a);
+}
+
+Vec2 operator*(Vec2 v, float a){
+    return Vec2(v.x*a,v.y*a);
+}
+
+double dist2(Vec2 a,Vec2 b){
+    return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
 }

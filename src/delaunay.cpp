@@ -123,6 +123,7 @@ bool Triangulation::frontTest(int t){ // checks that every point is in the same 
     }
     return res;
 }
+
 void Triangulation::addPointInside(Vec2 v, int tri_index){
     int f = tri_index;
     int f1 = tcount++;
@@ -178,18 +179,6 @@ int Triangulation::findContainerTriangleLinearSearch(Vec2 p){
         }
     }
     return -1;
-}
-
-Vec2 operator/(Vec2 v, float a){
-    return Vec2(v.x/a,v.y/a);
-}
-
-Vec2 operator*(Vec2 v, float a){
-    return Vec2(v.x*a,v.y*a);
-}
-
-double dist2(Vec2 a,Vec2 b){
-    return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
 }
 
 int Triangulation::findContainerTriangleSqrtSearch(Vec2 p, Vec2 initialPoint, int prop, int cameFrom){
@@ -259,6 +248,22 @@ void Triangulation::delaunayInsertion(Vec2 p){
     int tri_index;
     if(doLogSearch) tri_index = findContainerTriangleSqrtSearch(p,initialPoint,nextToMinOne,-1);
     else tri_index = findContainerTriangleLinearSearch(p);
+    
+    Vec2 points[] = {vertices[triangles[tri_index].v[0]].pos,vertices[triangles[tri_index].v[1]].pos,vertices[triangles[tri_index].v[2]].pos};
+
+    for(int i=0;i<3;i++){ // we dont insert repeated points
+        if(p==points[i])return;
+    }
+
+    for(int i=0;i<3;i++){
+        if(pointInSegment(p,points[(i+1)%3],points[(i+2)%3])){
+            // insert a point in a edge
+            //addPointInEdge(p,tri_index,triangles[tri_index].t[i]);
+            //addPointInEdge(p,tri_index);
+            //tri_index = -1;
+        }
+    }
+    
     if(tri_index!=-1){
         this->incount++;
         addPointInside(p,tri_index);
@@ -602,7 +607,15 @@ void Triangulation::centroidAll(float angle){
 
         int f1 = le[le.size()-1],f2 = le[le.size()-2];
 
-        if(f1==-1 || f2 ==-1) continue;
+        if(f1==-1 && f2==-1) continue;
+        if(f1==-1){
+            longestEdgeBisect(f2);
+            continue;
+        }
+        if(f2==-1){
+            longestEdgeBisect(f1);
+            continue;
+        }
 
         int points[4];
         points[0] = triangles[f1].v[0];
@@ -632,4 +645,13 @@ void Triangulation::addCentroids(){
         Vec2 p = (vertices[triangles[i].v[0]].pos + vertices[triangles[i].v[1]].pos + vertices[triangles[i].v[2]].pos)/3;
         delaunayInsertion(p);
     }
+}
+
+void Triangulation::longestEdgeBisect(int t){
+    int op1 = -1;
+    for(int i=0;i<3;i++){
+        if(triangles[t].t[i]==-1) op1 = i;
+    }
+    Vec2 p = (vertices[triangles[t].v[(op1+1)%3]].pos + vertices[triangles[t].v[(op1+2)%3]].pos)/2;
+    delaunayInsertion(p);
 }
