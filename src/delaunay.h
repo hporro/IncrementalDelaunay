@@ -78,7 +78,7 @@ public:
     // ---------------------- T2 --------------------
     int calcLongestEdge(int t); // gives the int corresponding to the opposite vertex of the longest edge of a triangle
     std::vector<int> calcLepp(int t);
-    void centroidAll(float angle);
+    void centroidAll(double angle);
     void addCentroids();
     void longestEdgeBisect(int t);
 };

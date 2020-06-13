@@ -52,7 +52,7 @@ bool pointInSegment(Vec2 p, Vec2 p1, Vec2 p2){
     Vec2 a = p1-p2;
     Vec2 n = Vec2(-a.y,a.x);
 
-    return abs(dot(p-p1,n)) > IN_TRIANGLE_EPS;
+    return abs(dot(p-p1,n)) < IN_TRIANGLE_EPS;
 }
 
 Vec2 operator/(Vec2 v, float a){
@@ -65,4 +65,8 @@ Vec2 operator*(Vec2 v, float a){
 
 double dist2(Vec2 a,Vec2 b){
     return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
+}
+
+double mod(Vec2 a){
+    return sqrt(a.x*a.x + a.y*a.y);
 }

@@ -257,10 +257,10 @@ void Triangulation::delaunayInsertion(Vec2 p){
 
     for(int i=0;i<3;i++){
         if(pointInSegment(p,points[(i+1)%3],points[(i+2)%3])){
-            // insert a point in a edge
+            // insert a point in the i edge
             //addPointInEdge(p,tri_index,triangles[tri_index].t[i]);
             //addPointInEdge(p,tri_index);
-            //tri_index = -1;
+            tri_index = -1;
         }
     }
     
@@ -597,9 +597,19 @@ std::vector<int> Triangulation::calcLepp(int t){
     return res;
 }
 
-void Triangulation::centroidAll(float angle){
+void Triangulation::centroidAll(double angle){
     int actTcount = tcount;
     for(int i=0;i<actTcount;i++){
+        bool flag_do = false;
+        for(int j=0;j<3;j++){
+            Vec2 x = vertices[triangles[i].v[(j+1)%3]].pos;
+            Vec2 y = vertices[triangles[i].v[(j+2)%3]].pos;
+
+            double s_angle = std::acos(dot(x,y)/(mod(x)*mod(y))) * 180.0 / ID_PI;
+            if(s_angle >=  angle) 
+            flag_do = true;
+        }
+        if(!flag_do) continue;
         std::vector<int> le = calcLepp(i);
         // for(int j=0;j<le.size();j++){
         //     std::cout << le[j] << " ";
@@ -652,6 +662,7 @@ void Triangulation::longestEdgeBisect(int t){
     for(int i=0;i<3;i++){
         if(triangles[t].t[i]==-1) op1 = i;
     }
+    if(op1==-1) std::cout << "waaaaaa" << std::endl;
     Vec2 p = (vertices[triangles[t].v[(op1+1)%3]].pos + vertices[triangles[t].v[(op1+2)%3]].pos)/2;
     delaunayInsertion(p);
 }
