@@ -93,7 +93,7 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP, bool logSearch 
     assert(frontTest(0));
 #endif
 
-    for(int i=0;i<points.size();i++){
+    for(int i=0;i<(int)points.size();i++){
         delaunayInsertion(points[i]);
     }
 }
@@ -125,6 +125,7 @@ bool Triangulation::frontTest(int t){ // checks that every point is in the same 
 }
 
 void Triangulation::addPointInside(Vec2 v, int tri_index){
+    remem();
     int f = tri_index;
     int f1 = tcount++;
     int f2 = tcount++;
@@ -134,7 +135,6 @@ void Triangulation::addPointInside(Vec2 v, int tri_index){
     int p0 = triangles[f].v[0];
     int p1 = triangles[f].v[1];
     int p2 = triangles[f].v[2];
-    int t0 = triangles[f].t[0];
     int t1 = triangles[f].t[1];
     int t2 = triangles[f].t[2];
 
@@ -214,10 +214,12 @@ int Triangulation::findContainerTriangleSqrtSearch(Vec2 p, Vec2 initialPoint, in
         }
     }
 
+    delete[] visited;
+
     return -1;
 }
 
-void Triangulation::delaunayInsertion(Vec2 p){
+bool Triangulation::delaunayInsertion(Vec2 p){
 #if ASSERT_PROBLEMS
     assert(
         triangles[nextToMinOne].t[0]==-1 ||
@@ -226,23 +228,7 @@ void Triangulation::delaunayInsertion(Vec2 p){
     );
 #endif
 
-    if(tcount == maxTriangles-1){ // we must get more space
-        //std::cout << "al triangulos" << std::endl;
-        Triangle *newTriangles = new Triangle[maxTriangles*maxTriangles];
-        std::copy(triangles,triangles+tcount,newTriangles);
-        delete[] triangles;
-        triangles = newTriangles;
-        maxTriangles *= maxTriangles;
-    }
-
-    if(vcount == maxVertices-1){ // we must get more space
-        //std::cout << "al vertices" << std::endl;
-        Vertex *newVertices = new Vertex[maxVertices*maxVertices];
-        std::copy(vertices,vertices+vcount,newVertices);
-        delete[] vertices;
-        vertices = newVertices;
-        maxVertices *= maxVertices;
-    }
+    remem();
 
     Vec2 initialPoint = (vertices[triangles[nextToMinOne].v[0]].pos+vertices[triangles[nextToMinOne].v[1]].pos+vertices[triangles[nextToMinOne].v[2]].pos)/3;
     int tri_index;
@@ -252,15 +238,30 @@ void Triangulation::delaunayInsertion(Vec2 p){
     Vec2 points[] = {vertices[triangles[tri_index].v[0]].pos,vertices[triangles[tri_index].v[1]].pos,vertices[triangles[tri_index].v[2]].pos};
 
     for(int i=0;i<3;i++){ // we dont insert repeated points
-        if(p==points[i])return;
+        if(p==points[i])return false;
     }
 
     for(int i=0;i<3;i++){
         if(pointInSegment(p,points[(i+1)%3],points[(i+2)%3])){
             // insert a point in the i edge
-            //addPointInEdge(p,tri_index,triangles[tri_index].t[i]);
-            //addPointInEdge(p,tri_index);
+            if(triangles[tri_index].t[i]==-1){
+                addPointInEdge(p,tri_index);
+                for(int j=0;j<3;j++){
+                    legalize(tri_index,triangles[tri_index].t[j]);
+                    legalize(tcount-1,triangles[tcount-1].t[j]);
+                }
+            }
+            else{
+                addPointInEdge(p,tri_index,triangles[tri_index].t[i]);
+                for(int j=0;j<3;j++){
+                    legalize(triangles[tri_index].t[i],triangles[triangles[tri_index].t[i]].t[j]);
+                    legalize(tri_index,triangles[tri_index].t[j]);
+                    legalize(tcount-1,triangles[tcount-1].t[j]);
+                    legalize(tcount-2,triangles[tcount-2].t[j]);
+                }
+            }
             tri_index = -1;
+            break;
         }
     }
     
@@ -273,8 +274,9 @@ void Triangulation::delaunayInsertion(Vec2 p){
             legalize(b, triangles[b].t[i]);
             legalize(c, triangles[c].t[i]);
         }
-        return;
+        return true;
     }
+    return true;
 }
 
 void Triangulation::legalize(int t1, int t2){
@@ -288,7 +290,6 @@ void Triangulation::legalize(int t1, int t2){
     a[4] = triangles[t2].v[1];
     a[5] = triangles[t2].v[2];
     int b[8];
-    int count = 0;
 
     b[0] = a[0];
     b[1] = a[1];
@@ -307,80 +308,100 @@ void Triangulation::legalize(int t1, int t2){
         flip(t1,t2);
     }
 }
-void Triangulation::addPointInEdge(Vec2 v, int t1, int t2){
+void Triangulation::addPointInEdge(Vec2 v, int t0, int t1){
 #if ASSERT_PROBLEMS
-    assert(isCCW(t1)&&isCCW(t2));
-    assert(isInEdge(t1,v)&&isInEdge(t2,v));
-    assert(integrity(t1)&&integrity(t2));
+    assert(isCCW(t0)&&isCCW(t1));
+    assert(integrity(t0)&&integrity(t1));
+    assert(frontTest(t0)&&frontTest(t1));
+    assert(areConnected(t0,t1));
+    assert(sanity(t0));
+    assert(sanity(t1));
+    assert(next(t0,t1));
 #endif
-    int f10,f20,f11,f21,f12,f22,p10,p20,p11,p21,p12,p22;
-    
-    p10 = triangles[t1].v[0];
-    p11 = triangles[t1].v[1];
-    p12 = triangles[t1].v[2];
-    f10 = triangles[t1].t[0];
-    f11 = triangles[t1].t[1];
-    f12 = triangles[t1].t[2];
-    
-    p20 = triangles[t2].v[0];
-    p21 = triangles[t2].v[1];
-    p22 = triangles[t2].v[2];
-    f20 = triangles[t2].t[0];
-    f21 = triangles[t2].t[1];
-    f22 = triangles[t2].t[2];
+    remem();
+    int p = vcount;
+    vertices[vcount++] = Vertex(v);
 
+    int t0_v = -1;
+    int t1_v = -1;
+
+    int f0,f3;
+    int p1;
+
+    for(int i=0;i<3;i++){
+        for(int j=0;j<3;j++){
+            if(triangles[t0].t[i]==t1 && triangles[t1].t[j]==t0){
+                t0_v = i;
+                t1_v = j;
+            }
+        }
+    }
+
+#if ASSERT_PROBLEMS
+    assert(t0_v!=-1);
+    assert(t1_v!=-1);
+    assert(triangles[t0].t[t0_v]==t1);
+    assert(triangles[t1].t[t1_v]==t0);
+#endif
+
+    f0 = triangles[t0].t[(t0_v+1)%3];
+    //p0 = triangles[t0].v[(t0_v+1)%3];
+    //f1 = triangles[t0].t[(t0_v+2)%3];
+    p1 = triangles[t0].v[(t0_v+2)%3];
+
+    //f2 = triangles[t1].t[(t0_v+2)%3];
+    //p2 = triangles[t1].v[(t0_v+2)%3];
+    f3 = triangles[t1].t[(t1_v+2)%3];
+    //p3 = triangles[t1].t[(t0_v+1)%3];
+
+    int t2 = tcount++;
     int t3 = tcount++;
-    int t4 = tcount++;
-    int p = vcount++;
-    vertices[p] = Vertex(v);
 
-    if(f10 == t2){
-        triangles[t3] = Triangle(p,p12,p10,f11,t1,t4);
-        triangles[t1].v[2] = p;
-        triangles[t1].t[1] = t3;
-    }
-    else if(f11 == t2){
-        triangles[t3] = Triangle(p,p10,p11,f12,t1,t4);
-        triangles[t1].v[0] = p;
-        triangles[t1].t[2] = t3;
-    }
-    else if(f12 == t2){
-        triangles[t3] = Triangle(p,p11,p12,f10,t1,t4);
-        triangles[t1].v[1] = p;
-        triangles[t1].t[0] = t3;
-    }
-    if(f20 == t1){
-        triangles[t4] = Triangle(p,p20,p21,f22,t3,t2);
-        triangles[t2].v[1] = p;
-        triangles[t2].t[2] = t4;
-    }
-    else if(f21 == t1){
-        triangles[t4] = Triangle(p,p21,p22,f20,t3,t2);
-        triangles[t2].v[2] = p;
-        triangles[t2].t[0] = t4;
-    }
-    else if(f22 == t1){
-        triangles[t4] = Triangle(p,p22,p20,f21,t3,t2);
-        triangles[t2].v[0] = p;
-        triangles[t2].t[1] = t4;
-    }
+    triangles[t2] = Triangle(p,p1,triangles[t0].v[t0_v],f0,t0,t3);
+    if(f0!=-1)for(int i=0;i<3;i++)if(triangles[f0].t[i]==t0)triangles[f0].t[i] = t2;
+
+    triangles[t3] = Triangle(p,triangles[t1].v[t1_v],p1,f3,t2,t1);
+    if(f3!=-1)for(int i=0;i<3;i++)if(triangles[f3].t[i]==t1)triangles[f3].t[i] = t3;
+
+    triangles[t0].v[(t0_v+2)%3] = p;
+    triangles[t0].t[(t0_v+1)%3] = t2;
+    triangles[t1].v[(t1_v+1)%3] = p;
+    triangles[t1].t[(t1_v+2)%3] = t3;
+
+    updateNextToMinOne(t0);
+    updateNextToMinOne(t1);
+    updateNextToMinOne(t2);
+    updateNextToMinOne(t3);
+    
+    remem();
+
+#if ASSERT_PROBLEMS
+    assert(isCCW(t0));
+    assert(isCCW(t1));
+    assert(isCCW(t2));
+    assert(isCCW(t3));
+    assert(integrity(t0));
+    assert(integrity(t1));
+    assert(integrity(t2));
+    assert(integrity(t3));
+#endif
 }
+
 void Triangulation::addPointInEdge(Vec2 v, int t){
 #if ASSERT_PROBLEMS
     assert(isCCW(t));
     assert(isInEdge(t,v));
     assert(integrity(t));
 #endif
-
+    remem();
+    
     int x = triangles[t].t[0] == -1 ? 0 : (triangles[t].t[1] == -1 ? 1 : 2);
 
-    int f0 = triangles[t].t[(x+2)%3];
     int f1 = triangles[t].t[x];
     int f2 = triangles[t].t[(x+1)%3];
 
     int p0 = triangles[t].v[(x+2)%3];
     int p1 = triangles[t].v[x];
-    int p2 = triangles[t].v[(x+1)%3];
     
     int t1 = tcount++;
     int p = vcount++;
@@ -405,6 +426,8 @@ void Triangulation::addPointInEdge(Vec2 v, int t){
     updateNextToMinOne(t);
     updateNextToMinOne(t1);
     updateNextToMinOne(f2);
+
+    remem();
 }
 bool Triangulation::areConnected(int t1, int t2){
     int vertcount = 0;
@@ -458,8 +481,6 @@ void Triangulation::flip(int t1, int t2){
 
     int p10,p11,p12,p20,p21,p22;
     int f10,f11,f12,f20,f21,f22;
-
-    int off = 0;
 
     p10 = triangles[t1].v[0];
     p11 = triangles[t1].v[1];
@@ -547,11 +568,12 @@ void Triangulation::flip(int t1, int t2){
 }
 
 Triangulation::~Triangulation(){
-    delete triangles;
-    delete vertices;
+    delete[] triangles;
+    delete[] vertices;
 }
 
 bool Triangulation::sanity(int t){
+    if(t==-1)return true;
     for(int i=0;i<3;i++){
         int count = 0;
         int f = triangles[t].t[i];
@@ -600,52 +622,56 @@ std::vector<int> Triangulation::calcLepp(int t){
 void Triangulation::centroidAll(double angle){
     int actTcount = tcount;
     for(int i=0;i<actTcount;i++){
-        bool flag_do = false;
-        for(int j=0;j<3;j++){
-            Vec2 x = vertices[triangles[i].v[(j+1)%3]].pos;
-            Vec2 y = vertices[triangles[i].v[(j+2)%3]].pos;
+        bool flag_do = true;
+        // while(flag_do){
+            //std::cout << i << std::endl;
+            flag_do = false;
+            for(int j=0;j<3;j++){
+                Vec2 x = vertices[triangles[i].v[(j+1)%3]].pos;
+                Vec2 y = vertices[triangles[i].v[(j+2)%3]].pos;
 
-            double s_angle = std::acos(dot(x,y)/(mod(x)*mod(y))) * 180.0 / ID_PI;
-            if(s_angle >=  angle) 
-            flag_do = true;
-        }
-        if(!flag_do) continue;
-        std::vector<int> le = calcLepp(i);
-        // for(int j=0;j<le.size();j++){
-        //     std::cout << le[j] << " ";
-        // }std::cout << std::endl;
-
-        int f1 = le[le.size()-1],f2 = le[le.size()-2];
-
-        if(f1==-1 && f2==-1) continue;
-        if(f1==-1){
-            longestEdgeBisect(f2);
-            continue;
-        }
-        if(f2==-1){
-            longestEdgeBisect(f1);
-            continue;
-        }
-
-        int points[4];
-        points[0] = triangles[f1].v[0];
-        points[1] = triangles[f1].v[1];
-        points[2] = triangles[f1].v[2];
-        points[3] = -1;
-        for(int j=0;j<3;j++){
-            int p = triangles[f2].v[j];
-            bool isDiff = true;
-            for(int k=0;k<3;k++){
-                if(points[k]==p)isDiff=false;
+                double s_angle = std::acos(dot(x,y)/(mod(x)*mod(y))) * 180.0 / ID_PI;
+                if(s_angle >=  angle + IN_TRIANGLE_EPS)
+                    flag_do = true;
             }
-            if(isDiff)points[3] = p;
-        }
+            if(!flag_do) break;
+            std::vector<int> le = calcLepp(i);
+            // for(int j=0;j<le.size();j++){
+            //     std::cout << le[j] << " ";
+            // }std::cout << std::endl;
 
-        //if(points[3]==-1)continue;
+            int f1 = le[le.size()-1],f2 = le[le.size()-2];
 
-        Vec2 p = (vertices[points[0]].pos+vertices[points[1]].pos+vertices[points[2]].pos+vertices[points[3]].pos)/4;
+            if(f1==-1 && f2==-1) continue;
+            if(f1==-1){
+                longestEdgeBisect(f2);
+                continue;
+            }
+            if(f2==-1){
+                longestEdgeBisect(f1);
+                continue;
+            }
 
-        delaunayInsertion(p);
+            int points[4];
+            points[0] = triangles[f1].v[0];
+            points[1] = triangles[f1].v[1];
+            points[2] = triangles[f1].v[2];
+            points[3] = -1;
+            for(int j=0;j<3;j++){
+                int p = triangles[f2].v[j];
+                bool isDiff = true;
+                for(int k=0;k<3;k++){
+                    if(points[k]==p)isDiff=false;
+                }
+                if(isDiff)points[3] = p;
+            }
+
+            //if(points[3]==-1)continue;
+
+            Vec2 p = (vertices[points[0]].pos+vertices[points[1]].pos+vertices[points[2]].pos+vertices[points[3]].pos)/4;
+
+            delaunayInsertion(p);
+        // }
     }
 }
 
@@ -662,7 +688,48 @@ void Triangulation::longestEdgeBisect(int t){
     for(int i=0;i<3;i++){
         if(triangles[t].t[i]==-1) op1 = i;
     }
-    if(op1==-1) std::cout << "waaaaaa" << std::endl;
     Vec2 p = (vertices[triangles[t].v[(op1+1)%3]].pos + vertices[triangles[t].v[(op1+2)%3]].pos)/2;
     delaunayInsertion(p);
+}
+
+void Triangulation::remem(){
+    if(tcount >= maxTriangles-4){ // we must get more space
+        // std::cout << "al triangulos" << std::endl;
+        Triangle *newTriangles = new Triangle[maxTriangles*2];
+        std::copy(triangles,triangles+tcount,newTriangles);
+        delete[] triangles;
+        triangles = newTriangles;
+        maxTriangles *= 2;
+    }
+
+    if(vcount >= maxVertices-3){ // we must get more space
+        // std::cout << "al vertices" << std::endl;
+        Vertex *newVertices = new Vertex[maxVertices*2];
+        std::copy(vertices,vertices+vcount,newVertices);
+        delete[] vertices;
+        vertices = newVertices;
+        maxVertices *= 2;
+    }
+}
+
+bool Triangulation::next(int t0, int t1){
+    if(t0==-1 && t1==-1)return true;
+    if(t0==-1){
+        for(int i=0;i<3;i++){
+            if(triangles[t1].t[i]==-1)return true;
+        }
+        return false;
+    }
+    if(t1==-1){
+        for(int i=0;i<3;i++){
+            if(triangles[t0].t[i]==-1)return true;
+        }
+        return false;
+    }
+    for(int i=0;i<3;i++){
+        for(int j=0;j<3;j++){
+            if(triangles[t0].t[i]==t1 && triangles[t1].t[j]==t0)return true;
+        }
+    }
+    return false;
 }

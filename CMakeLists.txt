@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.1)
 project(Delaunay_visual VERSION 0.1 LANGUAGES CXX C)
 set (CMAKE_CXX_STANDARD 11)
 
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Werror -O0 -g3 -ggdb3 -fno-inline")
+
 # Download submodules
 find_package(Git QUIET)
 

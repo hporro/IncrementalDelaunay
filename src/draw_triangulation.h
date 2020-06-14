@@ -41,7 +41,7 @@ public:
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         std::vector<Vec2> vecs(t->vcount);
         for(int i=0;i<t->vcount;i++)vecs[i]=t->vertices[i].pos;
-        glBufferData(GL_ARRAY_BUFFER, t->vcount*sizeof(Vec2), &vecs[0].x, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, t->vcount*sizeof(Vec2), &vecs[0], GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         std::vector<unsigned int> inds(t->tcount*3);

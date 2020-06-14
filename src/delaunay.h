@@ -37,7 +37,7 @@ public:
     Vertex *vertices;
     Triangle *triangles;
 
-    void delaunayInsertion(Vec2 point);
+    bool delaunayInsertion(Vec2 point);
     void addPointInside(Vec2 point,int);
     void addPointInEdge(Vec2 point, int t1, int t2);
     void addPointInEdge(Vec2 point, int t);
@@ -55,6 +55,7 @@ public:
     bool sanity(int);
     bool isCCW(int f); // check if a triangle, in the position f of the triangles array, is ccw
     bool integrity(int t);
+    bool next(int t0,int t1); //checks if two triangles are next to each other
 
     void print(); // prints the triangulation to standard output
     void print_ind(); // prints connectivity
@@ -81,6 +82,7 @@ public:
     void centroidAll(double angle);
     void addCentroids();
     void longestEdgeBisect(int t);
+    void remem(); // checks if more memory is needed, and if it is needed, allocates more memory.
 };
 
 double crossa(Vec2 a, Vec2 b);

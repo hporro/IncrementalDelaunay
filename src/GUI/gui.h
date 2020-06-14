@@ -8,7 +8,7 @@ class GUIState {
 public:
     GUIState() {}
     bool optionsActive = true;
-    float triangulation_color[3] = {0.27f, 0.356f, 1.0f};
+    float triangulation_color[3] = {0.565f, 0.0f, 0.686f};
     double xpos, ypos;
     int numP = 1000;
     int futNumP = numP;
@@ -18,13 +18,14 @@ public:
     TriangulationDrawer* td;
 
     int PointSize = 5;
-    bool ShowPoints = false;
+    bool ShowPoints = true;
 
     bool newTriagulationNeeded = false;
     bool genGrid = false;
     bool centroidAll = false;
-    float offset[2] = {0.0,0.0};
-    float zoom = 1;
+    float offset[2] = {0.0,-0.3};
+    float zoom = 0.6;
+    float angle = 30.0;
 };
 
 class DelaunayGUI {

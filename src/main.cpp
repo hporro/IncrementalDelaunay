@@ -20,6 +20,31 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     if(gstate->zoom <= 0.1) gstate->zoom = 0.1;
 }
 
+double clicked_pos[2];
+bool mouse_dragging = false;
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
+        glfwGetCursorPos(window, clicked_pos, clicked_pos+1);
+        mouse_dragging = true;
+    }
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE){
+        mouse_dragging = false;
+    }
+}
+
+static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if(mouse_dragging){
+        int width, height;
+        glfwGetWindowSize(window ,&width, &height);
+        gstate->offset[0] -= (clicked_pos[0] - xpos)/width;
+        gstate->offset[1] += (clicked_pos[1] - ypos)/height;
+        clicked_pos[0] = xpos;
+        clicked_pos[1] = ypos;
+    }
+}
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -56,6 +81,8 @@ int main(int argn, char** argv){
     glfwSwapInterval(1); // Enable vsync
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetKeyCallback(window, key_callback);
+    glfwSetCursorPosCallback(window, cursor_position_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
 
     // Initialize OpenGL loader
     bool err = gl3wInit() != 0;
@@ -65,13 +92,14 @@ int main(int argn, char** argv){
         return 1;
     }
 
-    int numP = 100;
-    int a = 3;
+    int numP = 10;
 
-    Vec2 p10 = Vec2(-1000,-1000);
-    Vec2 p11 = Vec2(1000,-1000);
-    Vec2 p12 = Vec2(1000,1000);
-    Vec2 p13 = Vec2(-1000,1000);
+
+    float boundSize = 100;
+    Vec2 p10 = Vec2(-boundSize,-boundSize);
+    Vec2 p11 = Vec2(boundSize,-boundSize);
+    Vec2 p12 = Vec2(boundSize,boundSize);
+    Vec2 p13 = Vec2(-boundSize,boundSize);
 
     std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
     Triangulation *t = new Triangulation(points,points.size(),true);
@@ -98,9 +126,6 @@ int main(int argn, char** argv){
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         if(dgui->state->newTriagulationNeeded){
-            delete t;
-            delete td;
-
             dgui->state->newTriagulationNeeded = false;
 
             if (dgui->state->genGrid) {
@@ -109,13 +134,15 @@ int main(int argn, char** argv){
             if (!dgui->state->genGrid) {
                 points = POINT_GENERATOR::gen_points_square(gstate->futNumP, p10, p11, p12, p13);
             }
+            delete t;
+            delete td;
             t = new Triangulation(points,points.size(),true);
             td = new TriangulationDrawer(t);
             gstate->numP = t->vcount;
             gstate->numT = t->tcount;
         }
         if(dgui->state->centroidAll){
-            t->centroidAll(30);
+            t->centroidAll(dgui->state->angle);
             //std::cout << " -------------------------------- - " << std::endl;
             //t->addCentroids();
             td->genBuffers();

@@ -21,8 +21,6 @@ double take_time_triangulation(std::vector<Vec2> points, void func(std::vector<V
 
 // prints results to the std output
 int main() {
-	int maxNumP = 10000;
-
 	auto make_log_triangulation = [](std::vector<Vec2> points){
 		Triangulation t(points,points.size(),true);
 	};
@@ -45,19 +43,19 @@ int main() {
 		lins.push_back(take_time_triangulation(points,make_linear_triangulation));
 	}
 	std::cout << "numP = [" << numPs[0];
-	for(int i=1;i<numPs.size();i++){
+	for(int i=1;i<(int)numPs.size();i++){
 		std::cout << "," << numPs[i] << " ";
 	}
 	std::cout << "]\n";
 
 	std::cout << "logs = [" << logs[0];
-	for(int i=1;i<logs.size();i++){
+	for(int i=1;i<(int)logs.size();i++){
 		std::cout << "," << logs[i] << " ";
 	}
 	std::cout << "]\n";
 
 	std::cout << "lins = [" << lins[0];
-	for(int i=1;i<lins.size();i++){
+	for(int i=1;i<(int)lins.size();i++){
 		std::cout << "," << lins[i] << " ";
 	}
 	std::cout << "]\n";

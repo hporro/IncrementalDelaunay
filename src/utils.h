@@ -1,5 +1,3 @@
-#include <algorithm>
-
 //HELPER FUNCTIONS
 double crossa(Vec2 a, Vec2 b){
     return a.x*b.y-a.y*b.x;
@@ -20,6 +18,12 @@ bool mightBeLeft(Vec2 a, Vec2 b){
 template<class T>
 T amin(T a, T b){
     if(a<b)return a;
+    return b;
+}
+
+template<class T>
+T amax(T a, T b){
+    if(a>b)return a;
     return b;
 }
 
@@ -44,10 +48,10 @@ double dot(Vec2 a, Vec2 b){
 
 bool pointInSegment(Vec2 p, Vec2 p1, Vec2 p2){
     if(p1==p2) return false;
-    if(p.x < std::min(p1.x,p2.x) + IN_TRIANGLE_EPS) return false;
-    if(p.x > std::max(p1.x,p2.x) + IN_TRIANGLE_EPS) return false;
-    if(p.y < std::min(p1.y,p2.y) + IN_TRIANGLE_EPS) return false;
-    if(p.y > std::max(p1.y,p2.y) + IN_TRIANGLE_EPS) return false;
+    if(p.x < amin(p1.x,p2.x) + IN_TRIANGLE_EPS) return false;
+    if(p.x > amax(p1.x,p2.x) + IN_TRIANGLE_EPS) return false;
+    if(p.y < amin(p1.y,p2.y) + IN_TRIANGLE_EPS) return false;
+    if(p.y > amax(p1.y,p2.y) + IN_TRIANGLE_EPS) return false;
 
     Vec2 a = p1-p2;
     Vec2 n = Vec2(-a.y,a.x);

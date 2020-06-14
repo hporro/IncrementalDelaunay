@@ -9,7 +9,7 @@ namespace POINT_GENERATOR {
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_real_distribution<> dist01(0.0, 1.0);
-    std::uniform_real_distribution<> lildist(-0.00001, 0.00001);
+    std::uniform_real_distribution<> lildist(-0.001, 0.001);
 
     Vec2 operator*(Vec2 v, float a){
         return Vec2(v.x*a,v.y*a);
@@ -75,6 +75,8 @@ namespace POINT_GENERATOR {
         for(int i=0;i<x;i++){
             for(int j=0;j<y;j++){
                 points[i*y+j] = p0 + (p1-p0)*(((float)i)/x) + (p2-p1)*((float)j/y);
+                points[i*y+j].x += lildist(rng);
+                points[i*y+j].y += lildist(rng);
             }
         }
         return points;

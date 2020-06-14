@@ -36,12 +36,6 @@ void DelaunayGUI::draw(){
         ImGui::NewFrame();
         {
             ImGui::Begin("Options",&state->optionsActive,ImGuiWindowFlags_MenuBar);
-            ImGui::Text("Triangulation visual options");
-            ImGui::SliderFloat("Zoom", &state->zoom,0.1,10.0);
-            ImGui::SliderFloat2("Offset", state->offset, -10.0, 10.0);
-            ImGui::ColorEdit3("Color",state->triangulation_color);
-            ImGui::Checkbox("Show Points",&state->ShowPoints);
-            ImGui::InputInt("Point Size",&state->PointSize);
             ImGui::Text("Make triangulation options");
             ImGui::InputInt("Number of points",&state->futNumP);
             if(ImGui::Button("New Triangulation")){
@@ -50,7 +44,19 @@ void DelaunayGUI::draw(){
             if(ImGui::Button("Centroid All")){
                 state->centroidAll = true;
             }
+            ImGui::SliderFloat("Centroid insertion angle", &state->angle, 5.0, 50.0);
             ImGui::Checkbox("Points in grid", &state->genGrid);
+            ImGui::Text("Triangulation visual options");
+            ImGui::SliderFloat("Zoom", &state->zoom,0.1,10.0);
+            ImGui::SliderFloat2("Offset", state->offset, -10.0, 10.0);
+            if(ImGui::Button("Center camera")){
+                state->zoom = 1.0;
+                state->offset[0] = 0.0;
+                state->offset[1] = 0.0;
+            }
+            ImGui::ColorEdit3("Color",state->triangulation_color);
+            ImGui::Checkbox("Show Points",&state->ShowPoints);
+            ImGui::InputInt("Point Size",&state->PointSize);
             ImGui::End();
         }
         {
