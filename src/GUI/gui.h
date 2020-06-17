@@ -18,7 +18,7 @@ public:
     TriangulationDrawer* td;
 
     int PointSize = 5;
-    bool ShowPoints = true;
+    bool ShowPoints = false;
 
     bool newTriagulationNeeded = false;
     bool genGrid = false;

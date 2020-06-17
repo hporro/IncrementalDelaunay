@@ -260,8 +260,7 @@ bool Triangulation::delaunayInsertion(Vec2 p){
                     legalize(tcount-2,triangles[tcount-2].t[j]);
                 }
             }
-            tri_index = -1;
-            break;
+            return true;
         }
     }
     
@@ -620,58 +619,64 @@ std::vector<int> Triangulation::calcLepp(int t){
 }
 
 void Triangulation::centroidAll(double angle){
-    int actTcount = tcount;
-    for(int i=0;i<actTcount;i++){
-        bool flag_do = true;
-        // while(flag_do){
-            //std::cout << i << std::endl;
-            flag_do = false;
-            for(int j=0;j<3;j++){
-                Vec2 x = vertices[triangles[i].v[(j+1)%3]].pos;
-                Vec2 y = vertices[triangles[i].v[(j+2)%3]].pos;
+    bool global_do = true;
+    while(global_do){
+        global_do = false;
+        for(int i=0;i<tcount;i++){
+            bool flag_do = true;
+            while(flag_do){
+                flag_do = false;
+                for(int j=0;j<3;j++){
+                    Vec2 x = vertices[triangles[i].v[(j+1)%3]].pos;
+                    Vec2 y = vertices[triangles[i].v[(j+2)%3]].pos;
+                    Vec2 z = vertices[triangles[i].v[j]].pos;
 
-                double s_angle = std::acos(dot(x,y)/(mod(x)*mod(y))) * 180.0 / ID_PI;
-                if(s_angle >=  angle + IN_TRIANGLE_EPS)
-                    flag_do = true;
-            }
-            if(!flag_do) break;
-            std::vector<int> le = calcLepp(i);
-            // for(int j=0;j<le.size();j++){
-            //     std::cout << le[j] << " ";
-            // }std::cout << std::endl;
+                    Vec2 a = y-z;
+                    Vec2 b = x-z;
 
-            int f1 = le[le.size()-1],f2 = le[le.size()-2];
-
-            if(f1==-1 && f2==-1) continue;
-            if(f1==-1){
-                longestEdgeBisect(f2);
-                continue;
-            }
-            if(f2==-1){
-                longestEdgeBisect(f1);
-                continue;
-            }
-
-            int points[4];
-            points[0] = triangles[f1].v[0];
-            points[1] = triangles[f1].v[1];
-            points[2] = triangles[f1].v[2];
-            points[3] = -1;
-            for(int j=0;j<3;j++){
-                int p = triangles[f2].v[j];
-                bool isDiff = true;
-                for(int k=0;k<3;k++){
-                    if(points[k]==p)isDiff=false;
+                    double s_angle = std::acos(dot(a,b)/(mod(a)*mod(b))) * (180.0 / ID_PI);
+                    if(s_angle <=  angle){
+                        flag_do = true;
+                        global_do = true;
+                    }
                 }
-                if(isDiff)points[3] = p;
+                
+                if(!flag_do) continue;
+
+                std::vector<int> le = calcLepp(i);
+                int f1 = le[le.size()-1],f2 = le[le.size()-2];
+
+                if(f1==-1 && f2==-1) continue;
+                if(f1==-1){
+                    longestEdgeBisect(f2);
+                    continue;
+                }
+                if(f2==-1){
+                    longestEdgeBisect(f1);
+                    continue;
+                }
+
+                int points[4];
+                points[0] = triangles[f1].v[0];
+                points[1] = triangles[f1].v[1];
+                points[2] = triangles[f1].v[2];
+                points[3] = -1;
+                for(int j=0;j<3;j++){
+                    int p = triangles[f2].v[j];
+                    bool isDiff = true;
+                    for(int k=0;k<3;k++){
+                        if(points[k]==p)isDiff=false;
+                    }
+                    if(isDiff)points[3] = p;
+                }
+
+                //if(points[3]==-1)continue;
+
+                Vec2 p = (vertices[points[0]].pos+vertices[points[1]].pos+vertices[points[2]].pos+vertices[points[3]].pos)/4;
+
+                delaunayInsertion(p);
             }
-
-            //if(points[3]==-1)continue;
-
-            Vec2 p = (vertices[points[0]].pos+vertices[points[1]].pos+vertices[points[2]].pos+vertices[points[3]].pos)/4;
-
-            delaunayInsertion(p);
-        // }
+        }
     }
 }
 
@@ -689,7 +694,7 @@ void Triangulation::longestEdgeBisect(int t){
         if(triangles[t].t[i]==-1) op1 = i;
     }
     Vec2 p = (vertices[triangles[t].v[(op1+1)%3]].pos + vertices[triangles[t].v[(op1+2)%3]].pos)/2;
-    delaunayInsertion(p);
+    addPointInEdge(p,t);
 }
 
 void Triangulation::remem(){

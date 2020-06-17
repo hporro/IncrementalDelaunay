@@ -41,7 +41,7 @@ void DelaunayGUI::draw(){
             if(ImGui::Button("New Triangulation")){
                 state->newTriagulationNeeded = true;
             }
-            if(ImGui::Button("Centroid All")){
+            if(ImGui::Button("Refine (Lepp centroid)")){
                 state->centroidAll = true;
             }
             ImGui::SliderFloat("Centroid insertion angle", &state->angle, 5.0, 50.0);
