@@ -5,6 +5,7 @@ Incremental Delaunay triangulation with visualization. It was implemented using 
 ## Screenshots
 
 ![Screenshot](screenshots/delaunaySqrt1000.jpg)
+![Screenshot](screenshots/refinedMesh.PNG)
 
 ## Getting Started (Ubuntu)
 
@@ -66,6 +67,13 @@ As you selected the `main.exe` executable, you can select the `tests.exe` execut
 * [imgui](https://github.com/ocornut/imgui) - GUI library
 * [GLFW](https://github.com/glfw/glfw) - Window manager library for OpenGL context
 * [tinytest](https://github.com/joewalnes/tinytest) - Simple header only test framework
+
+## Algorithms implemented
+
+The following algorithms are implemented in this project:
+
+* Incremental Delaunay triangulation construction. This is a classic algorithm in the literature.
+* Lepp centroid mesh improvement algorithm. This algorithm is fully described in the paper called "Terminal triangles centroid algorithms for quality Delaunay triangulation" Authored by Rivara and Diaz.
 
 ## Authors
 
