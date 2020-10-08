@@ -66,6 +66,9 @@ endforeach(SHADER)
 add_executable(Experiments Experiments/exps.cpp)
 target_link_libraries(Experiments PRIVATE glm delaunay_visual glfw gl3w)
 
+
+message(status ${CMAKE_DL_LIBS})
+
 # Main app: All together
 add_executable(main src/main.cpp)
 target_link_libraries(main PRIVATE delaunay_visual glfw gl3w DelaunayGUI ${CMAKE_DL_LIBS})
