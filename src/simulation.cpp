@@ -7,6 +7,7 @@
 #include "point_generator.h"
 #include "delaunay.h"
 #include "draw_triangulation.h"
+#include "simulation/shakerSimulation.h"
 
 static void glfw_error_callback(int error, const char* description){
     std::cerr << "Glfw Error "<< error << ": " << description << std::endl;
@@ -92,8 +93,8 @@ int main(int argn, char** argv){
         return 1;
     }
 
-    int numP = 10;
-
+    int numP = 5;
+    float maxVel = 40;
 
     float boundSize = 100;
     Vec2 p10 = Vec2(-boundSize,-boundSize);
@@ -116,6 +117,20 @@ int main(int argn, char** argv){
     dgui->state->td = td;
 
 
+    t->whichTriangle();
+    std::set<int> n = t->getNeighbours(0);
+    // for(int i=0;i<t->vcount;i++){
+    //     std::cout << t->vertices[i].tri_index << " " << t->triangles[t->vertices[i].tri_index].v[0] << " " << t->triangles[t->vertices[i].tri_index].v[1] << " " << t->triangles[t->vertices[i].tri_index].v[2] << std::endl;
+    // }std::cout << std::endl;
+    // for(int v: n){
+    //     std::cout << v << " ";
+    // }std::cout << std::endl;
+
+    TriangulationSaker* ts = new TriangulationSaker(t,maxVel);
+    ts->initRandomVel();
+
+    double currentTime = glfwGetTime(), lastTime = glfwGetTime();
+
     glEnable( GL_PROGRAM_POINT_SIZE );
     // Main loop
     while (!glfwWindowShouldClose(window)){
@@ -125,6 +140,15 @@ int main(int argn, char** argv){
         glViewport(0, 0, display_w, display_h);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        double delta = currentTime - lastTime;
+        if(dgui->state->runningsimulation){
+            ts->shakeTriangulation(delta);
+            td->genBuffers();
+        }
+        lastTime = currentTime;
+        currentTime = glfwGetTime();
+
         if(dgui->state->newTriagulationNeeded){
             dgui->state->newTriagulationNeeded = false;
 
@@ -136,8 +160,12 @@ int main(int argn, char** argv){
             }
             delete t;
             delete td;
+            delete ts;
             t = new Triangulation(points,points.size(),true);
             td = new TriangulationDrawer(t);
+            ts = new TriangulationSaker(t,maxVel);
+            t->whichTriangle();
+            ts->initRandomVel();
             gstate->numP = t->vcount;
             gstate->numT = t->tcount;
         }

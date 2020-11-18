@@ -63,6 +63,12 @@ void DelaunayGUI::draw(){
             ImGui::Begin("Triangulation Info",&state->optionsActive);
             ImGui::Text("Number of Vertices: %d",state->numP);
             ImGui::Text("Number of Triangles: %d",state->numT);
+            if(ImGui::Button("Save mesh")){
+                state->hastosave = true;
+            }
+            if(ImGui::Button("Running Simulation")){
+                state->runningsimulation=!state->runningsimulation;
+            }
             ImGui::End();
         }
         ImGui::Render();

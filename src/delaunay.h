@@ -4,6 +4,7 @@
 //#include <GL/gl3w.h>
 
 #include <vector>
+#include <set>
 #include <glm/glm.hpp>
 
 typedef glm::vec2 Vec2;
@@ -42,9 +43,17 @@ public:
     void addPointInEdge(Vec2 point, int t1, int t2);
     void addPointInEdge(Vec2 point, int t);
     void flip(int t1, int t2);
+    void flipNoChecking(int t1, int t2);
     int findContainerTriangleLinearSearch(Vec2 p);
     int findContainerTriangleSqrtSearch(Vec2 p, Vec2 initialPoint, int prop, int cameFrom);
     int findCHTriangle(int guess);
+    std::set<int> getNeighbours(int index);
+    std::set<int> getNeighbourTriangles(int index);
+    void movePoint(int index, Vec2 delta);
+    void whichTriangle();
+    int closestNeighbour(int index);
+    float closestNeighbourDistance(int index);
+    std::pair<int,int> getVerticesSharedByTriangles(int t1, int t2);
 
     bool isInside(int t, Vec2); //checks if a Vec2 is inside the triangle in the index t
     bool isInEdge(int t, Vec2); //checks if a Vec2 is in a edge of a triangle
@@ -91,5 +100,6 @@ bool isRight(Vec2 a, Vec2 b);
 bool mightBeLeft(Vec2 a, Vec2 b);
 double det(double a, double b, double c, double d, double e, double f, double g, double h, double i);
 double inCircle(Vec2 a, Vec2 b, Vec2 c, Vec2 d);
+void save_mesh(Triangulation *t, const char *filename);
 
 #endif

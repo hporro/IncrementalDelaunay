@@ -17,15 +17,18 @@ public:
     Triangulation* t;
     TriangulationDrawer* td;
 
-    int PointSize = 5;
-    bool ShowPoints = false;
+    int PointSize = 3;
+    bool ShowPoints = true;
 
     bool newTriagulationNeeded = false;
     bool genGrid = false;
     bool centroidAll = false;
     float offset[2] = {0.0,-0.3};
     float zoom = 0.6;
-    float angle = 30.0;
+    float angle = 20.0;
+
+    bool hastosave = false;
+    bool runningsimulation = true;
 };
 
 class DelaunayGUI {
