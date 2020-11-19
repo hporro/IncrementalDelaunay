@@ -47,6 +47,7 @@ public:
     int findContainerTriangleLinearSearch(Vec2 p);
     int findContainerTriangleSqrtSearch(Vec2 p, Vec2 initialPoint, int prop, int cameFrom);
     int findCHTriangle(int guess);
+
     std::set<int> getNeighbours(int index);
     std::set<int> getNeighbourTriangles(int index);
     void movePoint(int index, Vec2 delta);
@@ -54,6 +55,8 @@ public:
     int closestNeighbour(int index);
     float closestNeighbourDistance(int index);
     std::pair<int,int> getVerticesSharedByTriangles(int t1, int t2);
+
+    double triangleArea(int f);
 
     bool isInside(int t, Vec2); //checks if a Vec2 is inside the triangle in the index t
     bool isInEdge(int t, Vec2); //checks if a Vec2 is in a edge of a triangle
@@ -64,6 +67,7 @@ public:
     bool sanity(int);
     bool isCCW(int f); // check if a triangle, in the position f of the triangles array, is ccw
     bool integrity(int t);
+    bool validTriangle(int t);
     bool next(int t0,int t1); //checks if two triangles are next to each other
 
     void print(); // prints the triangulation to standard output
@@ -76,6 +80,7 @@ public:
     int incount = 0;
     int edgecount = 0;
     int oedgecount = 0;
+    int point_being_moved = -1;
 
     int nextToMinOne = 0;
     void updateNextToMinOne(int t);
@@ -92,6 +97,10 @@ public:
     void addCentroids();
     void longestEdgeBisect(int t);
     void remem(); // checks if more memory is needed, and if it is needed, allocates more memory.
+
+    // Kinetic delaunay
+    Vec2* velocity;
+    float radius = 0.5;
 };
 
 double crossa(Vec2 a, Vec2 b);

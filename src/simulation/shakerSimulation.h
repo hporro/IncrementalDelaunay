@@ -9,6 +9,7 @@ public:
     float maxVel;
     TriangulationSaker(Triangulation *t, float maxVel) : t(t), numP(t->vcount), maxVel(maxVel) {
         velocity = new Vec2[t->maxVertices];
+        t->velocity = this->velocity;
     }
     ~TriangulationSaker(){
         delete velocity;
@@ -26,7 +27,7 @@ public:
             velocity[i] = Vec2{0,0};
         }
         for(int i=4;i<numP;i++){
-            velocity[i] = Vec2{maxVel*i/numP,maxVel*i/numP};
+            velocity[i] = Vec2{maxVel*((float)i/numP),maxVel*((float)i/numP)};
         }
     }
 };

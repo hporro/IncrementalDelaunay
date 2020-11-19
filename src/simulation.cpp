@@ -93,7 +93,7 @@ int main(int argn, char** argv){
         return 1;
     }
 
-    int numP = 5;
+    int numP = 20;
     float maxVel = 40;
 
     float boundSize = 100;
@@ -143,7 +143,7 @@ int main(int argn, char** argv){
 
         double delta = currentTime - lastTime;
         if(dgui->state->runningsimulation){
-            ts->shakeTriangulation(delta);
+            ts->shakeTriangulation(1.0/60.0);
             td->genBuffers();
         }
         lastTime = currentTime;

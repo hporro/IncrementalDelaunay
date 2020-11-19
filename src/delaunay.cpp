@@ -38,6 +38,25 @@ bool Triangulation::isInside(int t, Vec2 p){
     return false;
 }
 
+bool Triangulation::validTriangle(int t){
+    if(t==-1)return true;
+    bool res = true;
+    if(t>=tcount)res=false;
+    if(t<-1)res=false;
+    for(int i=0;i<3;i++)if(triangles[t].t[i]<-1)res=false;
+    for(int i=0;i<3;i++)if(triangles[t].t[i]>tcount)res=false;
+    for(int i=0;i<3;i++)if(triangles[t].v[i]<0)res=false;
+    for(int i=0;i<3;i++)if(triangles[t].v[i]>vcount)res=false;
+
+    for(int i=0;i<3;i++){
+        if(triangles[t].v[i]==triangles[t].v[(i+1)%3])res=false;
+        if(triangles[t].t[i]==triangles[t].t[(i+1)%3] && triangles[t].t[i]!=-1)res=false;
+    }
+    if(res==false)
+        return res;
+    return true;
+}
+
 bool Triangulation::isInEdge(int t, Vec2 p){
     Vec2 p1 = vertices[triangles[t].v[0]].pos;
     Vec2 p2 = vertices[triangles[t].v[1]].pos;
@@ -113,12 +132,16 @@ bool Triangulation::integrity(int t){
 }
 
 bool Triangulation::frontTest(int t){ // checks that every point is in the same index of a triangle that the triangle in front of it
+    if(t==-1)return true;
     bool res = true;
     for(int i=0;i<3;i++){
         int v = triangles[t].v[i];
         int f = triangles[t].t[i];
         if(f!=-1)for(int j=0;j<3;j++){
-            if(triangles[f].v[j]==v)res=false;
+            if(triangles[f].v[j]==v){
+                res=false;
+                std::cout << t << " " <<  v << " != " << f << " " << triangles[f].v[j] << std::endl; 
+            }
         }
     }
     return res;
@@ -298,6 +321,7 @@ std::pair<int,int> Triangulation::getVerticesSharedByTriangles(int t1, int t2){
 void Triangulation::legalize(int t1, int t2){
     if(t2==-1)return;
     if(t1==-1)return;
+    if(!areConnected(t1,t2))return;
     int a[6];
     a[0] = triangles[t1].v[0];
     a[1] = triangles[t1].v[1];
@@ -321,24 +345,34 @@ void Triangulation::legalize(int t1, int t2){
     }
     if(!isCCW(t1) && !isCCW(t2)){
         std::cout << "ecase" << std::endl;
-        flip(t1,t2);
+        return;
+    }
+    for(int i=0;i<3;i++)if(isInside(t2,vertices[triangles[t1].v[i]].pos)){
+        std::cout << "fcase" << std::endl;
+        flipNoChecking(t1,t2);
+        std::cout << "End fcase" << std::endl;
+        return;
+    }
+    for(int i=0;i<3;i++)if(isInside(t1,vertices[triangles[t2].v[i]].pos)){
+        std::cout << "fcase" << std::endl;
+        flipNoChecking(t2,t1);
+        std::cout << "End fcase" << std::endl;
+        return;
     }
     if(!isCCW(t1) || !isCCW(t2)){
-        // happens when one of the vertices passes an edge
-        // but it may not be the other triangle's edge
-        auto vs = getVerticesSharedByTriangles(t1,t2);
-        if(mod(vertices[vs.first].pos-vertices[vs.second].pos)<0.01){
-            std::cout << "fcase" << std::endl;
-            flipNoChecking(t1,t2);
-        }
-        else {
-            std::cout << "No fcase" << std::endl;
-            return;
-        }
+        std::cout << "Not fcase yet" << std::endl;
+        return;
     }
-    if(inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)>0.000001 &&
-    inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos)>0.00000001) {
+    auto vs = getVerticesSharedByTriangles(t1,t2);
+    
+    if(inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)> IN_CIRCLE_EPS &&
+    inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos)> IN_CIRCLE_EPS &&
+    triangleArea(t1)>AREA_TO_FLIP_EPS && triangleArea(t2)>AREA_TO_FLIP_EPS &&
+    mod(vertices[vs.first].pos-vertices[vs.second].pos)>EDGE_LENGTH_FLIP_EPS    
+    ) {
+        // std::cout << "start flip " << t1 << " " << t2 << std::endl << std::flush;
         flip(t1,t2);
+        // std::cout << "end flip" << std::endl << std::flush;
     }
 }
 void Triangulation::addPointInEdge(Vec2 v, int t0, int t1){
@@ -467,7 +501,9 @@ bool Triangulation::areConnected(int t1, int t2){ // check if two triangles are 
             if(triangles[t2].t[j] == t1)facecount++;
         }
     }
-    return vertcount==2 && facecount==6;
+    if(!(vertcount==2 && facecount==6))
+        return false;
+    else return true;
 }
 void Triangulation::print(){
     for(int i=0;i<tcount;i++){
@@ -488,9 +524,17 @@ bool Triangulation::isCCW(int f){
     Vec2 p0 = vertices[triangles[f].v[0]].pos;
     Vec2 p1 = vertices[triangles[f].v[1]].pos;
     Vec2 p2 = vertices[triangles[f].v[2]].pos;
-    if((crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0))>-IN_TRIANGLE_EPS) return true;
+    if((crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0))>IN_TRIANGLE_EPS) return true;
     
     return false;
+}
+
+double Triangulation::triangleArea(int f){
+    if(f==-1)return true;
+    Vec2 p0 = vertices[triangles[f].v[0]].pos;
+    Vec2 p1 = vertices[triangles[f].v[1]].pos;
+    Vec2 p2 = vertices[triangles[f].v[2]].pos;
+    return (crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0));
 }
 
 void Triangulation::updateNextToMinOne(int t){
@@ -502,6 +546,7 @@ void Triangulation::updateNextToMinOne(int t){
 
 void Triangulation::flip(int t1, int t2){
 #if ASSERT_PROBLEMS
+    assert(validTriangle(t1)&&validTriangle(t2));
     assert(isCCW(t1)&&isCCW(t2));
     assert(integrity(t1)&&integrity(t2));
     assert(frontTest(t1)&&frontTest(t2));
@@ -589,6 +634,7 @@ void Triangulation::flip(int t1, int t2){
     }
 
 #if ASSERT_PROBLEMS
+    assert(validTriangle(t1)&&validTriangle(t2));
     assert(integrity(t1)&&integrity(t2));
     assert(isCCW(t1)&&isCCW(t2));
     assert(frontTest(t1)&&frontTest(t2));
@@ -603,6 +649,7 @@ void Triangulation::flip(int t1, int t2){
 
 void Triangulation::flipNoChecking(int t1, int t2){
 #if ASSERT_PROBLEMS
+    assert(validTriangle(t1)&&validTriangle(t2));
     assert(integrity(t1)&&integrity(t2));
     assert(frontTest(t1)&&frontTest(t2));
 #endif
@@ -659,6 +706,8 @@ void Triangulation::flipNoChecking(int t1, int t2){
         f22 = triangles[t2].t[1];
     }
 
+    assert(f20==t1 && f10==t2);
+
     triangles[t1].t[0] = t2;
     triangles[t1].t[1] = f12;
     triangles[t1].t[2] = f21;
@@ -689,15 +738,19 @@ void Triangulation::flipNoChecking(int t1, int t2){
     }
 
 #if ASSERT_PROBLEMS
+    assert(validTriangle(t1)&&validTriangle(t2));
+    assert(isCCW(t1));
+    assert(isCCW(t2));
     assert(integrity(t1)&&integrity(t2));
-    assert(frontTest(t1)&&frontTest(t2));
+    assert(frontTest(t1));
+    assert(frontTest(t2));
+    assert(frontTest(f11));
+    assert(frontTest(f12));
+    assert(frontTest(f21));
+    assert(frontTest(f22));
 #endif
     updateNextToMinOne(t1);
     updateNextToMinOne(t2);
-    legalize(t2,f20);
-    legalize(t2,f22);
-    legalize(t1,f10);
-    legalize(t1,f12);
 }
 
 Triangulation::~Triangulation(){
@@ -922,7 +975,7 @@ std::set<int> Triangulation::getNeighbours(int index){
         }
         for(int i=0;i<3;i++){
             if(trianglesChecked.find(triangles[curr_triangle].t[i])==trianglesChecked.end())
-                checkingTriangles.push_back(triangles[curr_triangle].t[i]);
+                if(triangles[curr_triangle].t[i]!=-1)checkingTriangles.push_back(triangles[curr_triangle].t[i]);
         }
         trianglesChecked.insert(curr_triangle);
     }
@@ -961,7 +1014,7 @@ std::set<int> Triangulation::getNeighbourTriangles(int index){
 float Triangulation::closestNeighbourDistance(int index){
     std::set<int> n = getNeighbours(index);
     int closestNeighbour = -1;
-    float closestDistance = (p1[0]-p0[0]) * (p2[1]-p0[1]);
+    float closestDistance = abs(p1[0]-p0[0]) * abs(p2[1]-p0[1]);
     for(int v: n){
         float dist = mod(vertices[index].pos-vertices[v].pos);
         if(dist<closestDistance){
@@ -973,8 +1026,14 @@ float Triangulation::closestNeighbourDistance(int index){
 }
 
 void Triangulation::movePoint(int index, Vec2 delta){
+    point_being_moved = index;
     std::set<int> nt = getNeighbourTriangles(index);
-    vertices[index].pos+=delta;
+    if(closestNeighbourDistance(index)<2*radius){
+        velocity[index]*=-1;
+        vertices[index].pos+=delta*-1;
+        std::cout << "BOUNCE " << std::endl;
+    }
+    else vertices[index].pos+=delta;
     for(int t: nt){
         for(int i=0;i<3;i++){
             legalize(t,triangles[t].t[i]);
