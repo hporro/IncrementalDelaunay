@@ -5,8 +5,11 @@
 
 #include <queue>
 #include <algorithm>
+#include <csignal>
 
 #include "utils.h"
+
+#define __H_BREAKPOINT__ __asm__("int $3")
 
 //VERTEX IMPL
 Vertex::Vertex(Vec2 v, int t) : pos(v), tri_index(t){}
@@ -52,8 +55,7 @@ bool Triangulation::validTriangle(int t){
         if(triangles[t].v[i]==triangles[t].v[(i+1)%3])res=false;
         if(triangles[t].t[i]==triangles[t].t[(i+1)%3] && triangles[t].t[i]!=-1)res=false;
     }
-    if(res==false)
-        return res;
+    if(!res) __H_BREAKPOINT__;
     return true;
 }
 
@@ -128,8 +130,7 @@ bool Triangulation::integrity(int t){
     if(t1!=-1) b = (t==triangles[t1].t[0]) || (t==triangles[t1].t[1]) || (t==triangles[t1].t[2]);
     if(t2!=-1) c = (t==triangles[t2].t[0]) || (t==triangles[t2].t[1]) || (t==triangles[t2].t[2]);
 
-    if(((a&&b)&&c)==false) 
-        return false;
+    if(((a&&b)&&c)==false) __H_BREAKPOINT__;
     return (a&&b)&&c;
 }
 
@@ -146,6 +147,7 @@ bool Triangulation::frontTest(int t){ // checks that every point is in the same 
             }
         }
     }
+    if(!res) __H_BREAKPOINT__;
     return res;
 }
 
@@ -348,6 +350,8 @@ void Triangulation::legalize(int t1, int t2){
     if(!isCCW(t1) && !isCCW(t2)){
         std::cout << "ecase" << std::endl;
         {
+            // __H_BREAKPOINT__;
+            if(abs(triangleArea(t1))<AREA_TO_FLIP_EPS || abs(triangleArea(t2))<AREA_TO_FLIP_EPS) return;
             auto vs = getVerticesSharedByTriangles(t1,t2);
             Vertex v1 = vertices[vs.first];
             Vertex v2 = vertices[vs.second];
@@ -534,7 +538,6 @@ bool Triangulation::isCCW(int f){
     Vec2 p1 = vertices[triangles[f].v[1]].pos;
     Vec2 p2 = vertices[triangles[f].v[2]].pos;
     if((crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0))>IN_TRIANGLE_EPS) return true;
-    
     return false;
 }
 

@@ -93,7 +93,7 @@ int main(int argn, char** argv){
         return 1;
     }
 
-    int numP = 20;
+    int numP = 200;
     float maxVel = 20;
 
     float boundSize = 100;
