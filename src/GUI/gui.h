@@ -26,6 +26,10 @@ public:
     float offset[2] = {0.0,-0.3};
     float zoom = 0.6;
     float angle = 20.0;
+    int frame_count = 0;
+    int fps=60;
+    float maxVel=20;
+    bool has_to_change_vel=false;
 
     bool hastosave = false;
     bool runningsimulation = true;

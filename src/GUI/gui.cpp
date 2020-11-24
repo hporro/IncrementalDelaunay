@@ -44,6 +44,9 @@ void DelaunayGUI::draw(){
             if(ImGui::Button("Refine (Lepp centroid)")){
                 state->centroidAll = true;
             }
+            // if(ImGui::SliderFloat("Simulation MaxVel", &state->maxVel, 10.0, 100.0)){
+            //     state->has_to_change_vel = true;
+            // }
             ImGui::SliderFloat("Centroid insertion angle", &state->angle, 5.0, 50.0);
             ImGui::Checkbox("Points in grid", &state->genGrid);
             ImGui::Text("Triangulation visual options");
@@ -61,6 +64,7 @@ void DelaunayGUI::draw(){
         }
         {
             ImGui::Begin("Triangulation Info",&state->optionsActive);
+            ImGui::Text("FPS: %d",state->fps);
             ImGui::Text("Number of Vertices: %d",state->numP);
             ImGui::Text("Number of Triangles: %d",state->numT);
             if(ImGui::Button("Save mesh")){

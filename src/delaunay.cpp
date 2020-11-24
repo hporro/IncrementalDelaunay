@@ -128,6 +128,8 @@ bool Triangulation::integrity(int t){
     if(t1!=-1) b = (t==triangles[t1].t[0]) || (t==triangles[t1].t[1]) || (t==triangles[t1].t[2]);
     if(t2!=-1) c = (t==triangles[t2].t[0]) || (t==triangles[t2].t[1]) || (t==triangles[t2].t[2]);
 
+    if(((a&&b)&&c)==false) 
+        return false;
     return (a&&b)&&c;
 }
 
@@ -345,22 +347,29 @@ void Triangulation::legalize(int t1, int t2){
     }
     if(!isCCW(t1) && !isCCW(t2)){
         std::cout << "ecase" << std::endl;
+        {
+            auto vs = getVerticesSharedByTriangles(t1,t2);
+            Vertex v1 = vertices[vs.first];
+            Vertex v2 = vertices[vs.second];
+            vertices[vs.first] = v2;
+            vertices[vs.second] = v1;
+        }
         return;
     }
     for(int i=0;i<3;i++)if(isInside(t2,vertices[triangles[t1].v[i]].pos)){
-        std::cout << "fcase" << std::endl;
+        // std::cout << "fcase" << std::endl;
         flipNoChecking(t1,t2);
-        std::cout << "End fcase" << std::endl;
+        // std::cout << "End fcase" << std::endl;
         return;
     }
     for(int i=0;i<3;i++)if(isInside(t1,vertices[triangles[t2].v[i]].pos)){
-        std::cout << "fcase" << std::endl;
+        // std::cout << "fcase" << std::endl;
         flipNoChecking(t2,t1);
-        std::cout << "End fcase" << std::endl;
+        // std::cout << "End fcase" << std::endl;
         return;
     }
     if(!isCCW(t1) || !isCCW(t2)){
-        std::cout << "Not fcase yet" << std::endl;
+        // std::cout << "Not fcase yet" << std::endl;
         return;
     }
     auto vs = getVerticesSharedByTriangles(t1,t2);
@@ -546,11 +555,16 @@ void Triangulation::updateNextToMinOne(int t){
 
 void Triangulation::flip(int t1, int t2){
 #if ASSERT_PROBLEMS
+    assert(sanity(t1)&&sanity(t2));
+    assert(areConnected(t1,t2));
     assert(validTriangle(t1)&&validTriangle(t2));
     assert(isCCW(t1)&&isCCW(t2));
     assert(integrity(t1)&&integrity(t2));
     assert(frontTest(t1)&&frontTest(t2));
 #endif
+
+    Triangle pt1 = triangles[t1];
+    Triangle pt2 = triangles[t2];
 
     int p10,p11,p12,p20,p21,p22;
     int f10,f11,f12,f20,f21,f22;
@@ -610,9 +624,6 @@ void Triangulation::flip(int t1, int t2){
     triangles[t1].v[0] = p11; assert(p11==p22);
     triangles[t1].v[1] = p20;
     triangles[t1].v[2] = p10;
-    vertices[p11].tri_index=t1;
-    vertices[p20].tri_index=t1;
-    vertices[p10].tri_index=t1;
 
     triangles[t2].t[0] = t1;
     triangles[t2].t[1] = f22;
@@ -620,9 +631,36 @@ void Triangulation::flip(int t1, int t2){
     triangles[t2].v[0] = p12; assert(p12==p21);
     triangles[t2].v[1] = p10;
     triangles[t2].v[2] = p20;
-    vertices[p12].tri_index=t2;
-    vertices[p10].tri_index=t2;
-    vertices[p20].tri_index=t2;
+
+    if(!validTriangle(t1) || !validTriangle(t2)){
+        if(!validTriangle(t1) && !validTriangle(t2)){
+            triangles[t1] = pt1;
+            triangles[t2] = pt2;
+            for(int i=0;i<3;i++)if(triangles[t1].t[i]==t2){
+                int aux = triangles[t1].t[(i+1)%3];
+                triangles[t1].t[(i+1)%3] = triangles[t1].t[(i+2)%3];
+                triangles[t1].t[(i+2)%3] = aux;
+            }
+            for(int i=0;i<3;i++)if(triangles[t2].t[i]==t1){
+                int aux = triangles[t2].t[(i+1)%3];
+                triangles[t2].t[(i+1)%3] = triangles[t2].t[(i+2)%3];
+                triangles[t2].t[(i+2)%3] = aux;
+            }
+#if ASSERT_PROBLEMS
+    assert(validTriangle(t1)&&validTriangle(t2));
+    assert(integrity(t1)&&integrity(t2));
+    assert(isCCW(t1)&&isCCW(t2));
+    assert(frontTest(t1)&&frontTest(t2));
+#endif
+            flip(t1,t2);
+            return;
+        }
+        else{
+            triangles[t1] = pt1;
+            triangles[t2] = pt2;
+            return;
+        }
+    }
 
     //update f11
     if(f11!=-1)for(int i=0;i<3;i++){
@@ -639,12 +677,17 @@ void Triangulation::flip(int t1, int t2){
     assert(isCCW(t1)&&isCCW(t2));
     assert(frontTest(t1)&&frontTest(t2));
 #endif
+
+    vertices[p11].tri_index=t1;
+    vertices[p20].tri_index=t1;
+    vertices[p10].tri_index=t1;
+
+    vertices[p12].tri_index=t2;
+    vertices[p10].tri_index=t2;
+    vertices[p20].tri_index=t2;
+
     updateNextToMinOne(t1);
     updateNextToMinOne(t2);
-    legalize(t2,f20);
-    legalize(t2,f22);
-    legalize(t1,f10);
-    legalize(t1,f12);
 }
 
 void Triangulation::flipNoChecking(int t1, int t2){
@@ -653,6 +696,9 @@ void Triangulation::flipNoChecking(int t1, int t2){
     assert(integrity(t1)&&integrity(t2));
     assert(frontTest(t1)&&frontTest(t2));
 #endif
+
+    Triangle pt1 = triangles[t1];
+    Triangle pt2 = triangles[t2];
 
     int p10,p11,p12,p20,p21,p22;
     int f10,f11,f12,f20,f21,f22;
@@ -714,19 +760,43 @@ void Triangulation::flipNoChecking(int t1, int t2){
     triangles[t1].v[0] = p11; assert(p11==p22);
     triangles[t1].v[1] = p20;
     triangles[t1].v[2] = p10;
-    vertices[p11].tri_index=t1;
-    vertices[p20].tri_index=t1;
-    vertices[p10].tri_index=t1;
-
+    
     triangles[t2].t[0] = t1;
     triangles[t2].t[1] = f22;
     triangles[t2].t[2] = f11;
     triangles[t2].v[0] = p12; assert(p12==p21);
     triangles[t2].v[1] = p10;
     triangles[t2].v[2] = p20;
-    vertices[p12].tri_index=t2;
-    vertices[p10].tri_index=t2;
-    vertices[p20].tri_index=t2;
+
+    if(!validTriangle(t1) || !validTriangle(t2)){
+        if(!validTriangle(t1) && !validTriangle(t2)){
+            triangles[t1] = pt1;
+            triangles[t2] = pt2;
+            for(int i=0;i<3;i++)if(triangles[t1].t[i]==t2){
+                int aux = triangles[t1].t[(i+1)%3];
+                triangles[t1].t[(i+1)%3] = triangles[t1].t[(i+2)%3];
+                triangles[t1].t[(i+2)%3] = aux;
+            }
+            for(int i=0;i<3;i++)if(triangles[t2].t[i]==t1){
+                int aux = triangles[t2].t[(i+1)%3];
+                triangles[t2].t[(i+1)%3] = triangles[t2].t[(i+2)%3];
+                triangles[t2].t[(i+2)%3] = aux;
+            }
+#if ASSERT_PROBLEMS
+    assert(validTriangle(t1)&&validTriangle(t2));
+    assert(integrity(t1)&&integrity(t2));
+    assert(isCCW(t1)&&isCCW(t2));
+    assert(frontTest(t1)&&frontTest(t2));
+#endif
+            flip(t1,t2);
+            return;
+        }
+        else{
+            triangles[t1] = pt1;
+            triangles[t2] = pt2;
+            return;
+        }
+    }
 
     //update f11
     if(f11!=-1)for(int i=0;i<3;i++){
@@ -749,6 +819,15 @@ void Triangulation::flipNoChecking(int t1, int t2){
     assert(frontTest(f21));
     assert(frontTest(f22));
 #endif
+
+    vertices[p11].tri_index=t1;
+    vertices[p20].tri_index=t1;
+    vertices[p10].tri_index=t1;
+
+    vertices[p12].tri_index=t2;
+    vertices[p10].tri_index=t2;
+    vertices[p20].tri_index=t2;
+
     updateNextToMinOne(t1);
     updateNextToMinOne(t2);
 }
@@ -1031,7 +1110,7 @@ void Triangulation::movePoint(int index, Vec2 delta){
     if(closestNeighbourDistance(index)<2*radius){
         velocity[index]*=-1;
         vertices[index].pos+=delta*-1;
-        std::cout << "BOUNCE " << std::endl;
+        // std::cout << "BOUNCE " << std::endl;
     }
     else vertices[index].pos+=delta;
     for(int t: nt){

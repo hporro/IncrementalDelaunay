@@ -94,7 +94,7 @@ int main(int argn, char** argv){
     }
 
     int numP = 20;
-    float maxVel = 40;
+    float maxVel = 20;
 
     float boundSize = 100;
     Vec2 p10 = Vec2(-boundSize,-boundSize);
@@ -130,6 +130,7 @@ int main(int argn, char** argv){
     ts->initRandomVel();
 
     double currentTime = glfwGetTime(), lastTime = glfwGetTime();
+    double time_passed = 0;
 
     glEnable( GL_PROGRAM_POINT_SIZE );
     // Main loop
@@ -142,12 +143,24 @@ int main(int argn, char** argv){
         glClear(GL_COLOR_BUFFER_BIT);
 
         double delta = currentTime - lastTime;
+        time_passed+=delta;
         if(dgui->state->runningsimulation){
             ts->shakeTriangulation(1.0/60.0);
             td->genBuffers();
         }
+        if(dgui->state->has_to_change_vel){
+            delete ts;
+            ts = new TriangulationSaker(t,dgui->state->maxVel);
+            ts->initRandomVel();
+        }
         lastTime = currentTime;
         currentTime = glfwGetTime();
+        dgui->state->frame_count++;
+        if(time_passed>=1.0){
+            dgui->state->fps = dgui->state->frame_count;
+            dgui->state->frame_count=0;
+            time_passed=0;
+        }
 
         if(dgui->state->newTriagulationNeeded){
             dgui->state->newTriagulationNeeded = false;
