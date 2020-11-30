@@ -6,6 +6,7 @@ Incremental Delaunay triangulation with visualization. It was implemented using 
 
 ![Screenshot](screenshots/delaunaySqrt1000.jpg)
 ![Screenshot](screenshots/refinedMesh.PNG)
+![Screenshot](screenshots/fluids.png)
 
 ## Getting Started (Ubuntu)
 
