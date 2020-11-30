@@ -7,7 +7,7 @@
 #include "point_generator.h"
 #include "delaunay.h"
 #include "draw_triangulation.h"
-#include "simulation/shakerSimulation.h"
+#include "simulation/fluidSimulation.h"
 
 static void glfw_error_callback(int error, const char* description){
     std::cerr << "Glfw Error "<< error << ": " << description << std::endl;
@@ -94,7 +94,7 @@ int main(int argn, char** argv){
     }
 
     int numP = 200;
-    float maxVel = 20;
+    float maxVel = 10;
 
     float boundSize = 100;
     Vec2 p10 = Vec2(-boundSize,-boundSize);
@@ -103,7 +103,12 @@ int main(int argn, char** argv){
     Vec2 p13 = Vec2(-boundSize,boundSize);
 
     std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
-    Triangulation *t = new Triangulation(points,points.size(),true);
+    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_grid(std::sqrt(numP),std::sqrt(numP),p10,Vec2(p11.x/8,p11.y),Vec2(p12.x/8,p12.y/2),Vec2(p13.x,p13.y/2));
+    points2.push_back(p10);
+    points2.push_back(p11);
+    points2.push_back(p12);
+    points2.push_back(p13);
+    Triangulation *t = new Triangulation(points2,points2.size(),true);
     TriangulationDrawer *td = new TriangulationDrawer(t);
 
     // Gui for the program
@@ -126,7 +131,7 @@ int main(int argn, char** argv){
     //     std::cout << v << " ";
     // }std::cout << std::endl;
 
-    TriangulationSaker* ts = new TriangulationSaker(t,maxVel);
+    FluidSimulation* ts = new FluidSimulation(t,maxVel);
     ts->initRandomVel();
 
     double currentTime = glfwGetTime(), lastTime = glfwGetTime();
@@ -145,12 +150,12 @@ int main(int argn, char** argv){
         double delta = currentTime - lastTime;
         time_passed+=delta;
         if(dgui->state->runningsimulation){
-            ts->shakeTriangulation(1.0/60.0);
+            ts->step(1.0/60.0);
             td->genBuffers();
         }
         if(dgui->state->has_to_change_vel){
             delete ts;
-            ts = new TriangulationSaker(t,dgui->state->maxVel);
+            ts = new FluidSimulation(t,dgui->state->maxVel);
             ts->initRandomVel();
         }
         lastTime = currentTime;
@@ -176,7 +181,7 @@ int main(int argn, char** argv){
             delete ts;
             t = new Triangulation(points,points.size(),true);
             td = new TriangulationDrawer(t);
-            ts = new TriangulationSaker(t,maxVel);
+            ts = new FluidSimulation(t,maxVel);
             t->whichTriangle();
             ts->initRandomVel();
             gstate->numP = t->vcount;

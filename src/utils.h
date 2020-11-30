@@ -1,3 +1,4 @@
+
 //HELPER FUNCTIONS
 double crossa(Vec2 a, Vec2 b){
     return a.x*b.y-a.y*b.x;
@@ -71,6 +72,16 @@ double dist2(Vec2 a,Vec2 b){
     return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
 }
 
-double mod(Vec2 a){
+inline double mod(Vec2 a){
     return sqrt(a.x*a.x + a.y*a.y);
+}
+
+template<class T>
+inline T pow2(T a){
+    return a*a;
+}
+
+template<class T>
+inline T pow3(T a){
+    return a*a*a;
 }

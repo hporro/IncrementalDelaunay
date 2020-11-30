@@ -101,6 +101,14 @@ public:
     // Kinetic delaunay
     Vec2* velocity;
     float radius = 0.5;
+    struct RemovedVertex{
+        int t[3]; // indices to the triangles array
+        int v; // index to the vertices array
+        Vertex vx; // vertex info
+    };
+    RemovedVertex removeVertex(int v); // removes a vertex from a triangulation, and returns it
+    void reAddVertex(int v, Vertex vx); // add a vertex when it was previously deleted
+    std::set<int> getFRNN(int v, float r);
 };
 
 double crossa(Vec2 a, Vec2 b);
