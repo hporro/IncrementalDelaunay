@@ -59,6 +59,7 @@ void DelaunayGUI::draw(){
             }
             ImGui::ColorEdit3("Color",state->triangulation_color);
             ImGui::Checkbox("Show Points",&state->ShowPoints);
+            ImGui::Checkbox("Show Triangulation",&state->ShowTriangulation);
             ImGui::InputInt("Point Size",&state->PointSize);
             ImGui::End();
         }

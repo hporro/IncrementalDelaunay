@@ -33,6 +33,7 @@ public:
 
     bool hastosave = false;
     bool runningsimulation = true;
+    bool ShowTriangulation = true;
 };
 
 class DelaunayGUI {

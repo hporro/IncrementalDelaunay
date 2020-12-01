@@ -93,17 +93,17 @@ int main(int argn, char** argv){
         return 1;
     }
 
-    int numP = 200;
+    int numP = 400;
     float maxVel = 10;
 
-    float boundSize = 100;
+    float boundSize = 300;
     Vec2 p10 = Vec2(-boundSize,-boundSize);
     Vec2 p11 = Vec2(boundSize,-boundSize);
     Vec2 p12 = Vec2(boundSize,boundSize);
     Vec2 p13 = Vec2(-boundSize,boundSize);
 
     std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
-    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_grid(std::sqrt(numP),std::sqrt(numP),p10,Vec2(p11.x/8,p11.y),Vec2(p12.x/8,p12.y/2),Vec2(p13.x,p13.y/2));
+    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_grid(std::sqrt(numP),std::sqrt(numP),p10,Vec2(p11.x/8,p11.y),Vec2(p12.x/8,p12.y/4),Vec2(p13.x,p13.y/4));
     points2.push_back(p10);
     points2.push_back(p11);
     points2.push_back(p12);
@@ -202,7 +202,8 @@ int main(int argn, char** argv){
 		}
         glPointSize(dgui->state->PointSize);
         td->setColor(dgui->state->triangulation_color);
-        td->draw(dgui->state->offset,dgui->state->zoom);
+        if(dgui->state->ShowTriangulation)
+            td->draw(dgui->state->offset,dgui->state->zoom);
         if(dgui->state->ShowPoints)
             td->draw_points(dgui->state->offset,dgui->state->zoom);
         glfwGetCursorPos(window, &dgui->state->xpos, &dgui->state->ypos);

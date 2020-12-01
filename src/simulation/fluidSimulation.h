@@ -41,16 +41,16 @@ public:
         this->numP = t->vcount;
 
         dt = 1.0/60.0;
-        g = 0.008;
+        g = 0.8;
 
-        h = 17.5;
+        h = 30;
         p0 = 9;
         k = 0.01;
         P = new float[numP];
         p = new float[numP];
 
         p_near = new float[numP];
-        k_near = 0.3;
+        k_near = 0.4;
         P_near = new float[numP];
 
         dx = new Vec2[numP];
