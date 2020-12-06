@@ -34,6 +34,7 @@ public:
     float k_near; // near density stiffness factor
     float* P_near; // near pseudo pressure
     Vec2* dx;
+    int* state_code; // particle state code {0=dont move, 1=water,}
 
     FluidSimulation(Triangulation *t, float maxVel) : t(t), numP(t->vcount), maxVel(maxVel) {
         velocity = new Vec2[t->maxVertices];
@@ -41,11 +42,11 @@ public:
         this->numP = t->vcount;
 
         dt = 1.0/60.0;
-        g = 0.8;
+        g = 0.9;
 
-        h = 30;
-        p0 = 9;
-        k = 0.01;
+        h = 35;
+        p0 = 6;
+        k = 0.005;
         P = new float[numP];
         p = new float[numP];
 
@@ -55,8 +56,11 @@ public:
 
         dx = new Vec2[numP];
 
+        state_code = new int[numP];
+
         for(int i=0;i<numP;i++){
             velocity[i] = Vec2{0,0};
+            state_code[i] = 1;
         }
     }
 
@@ -93,7 +97,7 @@ public:
                 }
             }
         }
-        for(int i=4;i<numP;i++){
+        for(int i=4;i<numP;i++)if(state_code[i]){
             t->movePoint(i,dx[i] + velocity[i]*dt);
             velocity[i] = dx[i];
             velocity[i] -= Vec2{0,g};

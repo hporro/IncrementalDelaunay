@@ -42,8 +42,8 @@ public:
     void addPointInside(Vec2 point,int);
     void addPointInEdge(Vec2 point, int t1, int t2);
     void addPointInEdge(Vec2 point, int t);
-    void flip(int t1, int t2);
-    void flipNoChecking(int t1, int t2);
+    bool flip(int t1, int t2);
+    bool flipNoChecking(int t1, int t2);
     int findContainerTriangleLinearSearch(Vec2 p);
     int findContainerTriangleSqrtSearch(Vec2 p, Vec2 initialPoint, int prop, int cameFrom);
     int findCHTriangle(int guess);
@@ -59,8 +59,9 @@ public:
     double triangleArea(int f);
 
     bool isInside(int t, Vec2); //checks if a Vec2 is inside the triangle in the index t
+    bool isInside(int t, int v);
     bool isInEdge(int t, Vec2); //checks if a Vec2 is in a edge of a triangle
-    void legalize(int t1, int t2);
+    bool legalize(int t1, int t2);
 
     bool areConnected(int,int);
     bool frontTest(int);
@@ -107,7 +108,7 @@ public:
         Vertex vx; // vertex info
     };
     RemovedVertex removeVertex(int v); // removes a vertex from a triangulation, and returns it
-    void reAddVertex(int v, Vertex vx); // add a vertex when it was previously deleted
+    void reAddVertex(RemovedVertex rmvx); // add a vertex when it was previously deleted
     std::set<int> getFRNN(int v, float r);
 };
 
