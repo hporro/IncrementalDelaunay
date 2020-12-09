@@ -70,10 +70,11 @@ target_link_libraries(Experiments PRIVATE glm delaunay_visual glfw gl3w)
 message(status ${CMAKE_DL_LIBS})
 
 # Main app: All together
-add_executable(main src/main.cpp)
+add_executable(main examples/main.cpp)
 target_link_libraries(main PRIVATE delaunay_visual glfw gl3w DelaunayGUI ${CMAKE_DL_LIBS})
+target_include_directories(main PRIVATE src)
 
 # Main app2: All together, in a kinetic setting
-add_executable(simulation src/simulation.cpp)
+add_executable(simulation examples/simulation.cpp)
 target_link_libraries(simulation PRIVATE delaunay_visual glfw gl3w DelaunayGUI ${CMAKE_DL_LIBS})
 target_include_directories(simulation PRIVATE src)
