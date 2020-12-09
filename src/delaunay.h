@@ -62,6 +62,7 @@ public:
     bool isInside(int t, int v);
     bool isInEdge(int t, Vec2); //checks if a Vec2 is in a edge of a triangle
     bool legalize(int t1, int t2);
+    bool isConvexBicell(int t1, int t2); // Checks if a bicell is convex
 
     bool areConnected(int,int);
     bool frontTest(int);

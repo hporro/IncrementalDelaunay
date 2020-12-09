@@ -12,6 +12,7 @@
 #define __H_BREAKPOINT__ __asm__("int $3")
 //#define __H_ASSERT__(condition) if(!(condition)) {__H_BREAKPOINT__; return false;}
 #define __H_ASSERT__(condition) if(!(condition)) { triangles[t1] = pt1; triangles[t2] = pt2; return false;}
+#define __H_BREAK_ASSERT__(condition) if(!(condition)) {__H_BREAKPOINT__;assert(condition);}
 
 //VERTEX IMPL
 Vertex::Vertex(Vec2 v, int t) : pos(v), tri_index(t){}
@@ -1076,33 +1077,30 @@ std::set<int> Triangulation::getNeighbours(int index){
     return neighbours;
 }
 
-std::set<int> Triangulation::getNeighbourTriangles(int index){ // gets the triangles that are near a vertex
-    int tri_index = vertices[index].tri_index;
-    std::set<int> trianglesChecked = std::set<int>();
-    std::vector<int> checkingTriangles = std::vector<int>();
-    checkingTriangles.push_back(tri_index);
-    while(checkingTriangles.size()>0){
-        int curr_triangle = checkingTriangles.back();
-        checkingTriangles.pop_back();
-        if(curr_triangle==-1)continue;
-        trianglesChecked.insert(curr_triangle);
-        bool isInside = false;
+std::set<int> Triangulation::getNeighbourTriangles(int index){ // gets the triangles that have a vertex
+    std::vector<int> ctriangles = std::vector<int>(10);
+    ctriangles.push_back(vertices[index].tri_index);
+    
+    std::set<int> res = std::set<int>();
+    
+    while(ctriangles.size()>0){
+        int t = ctriangles.back();
+        ctriangles.pop_back();
+
+        if(t==-1)continue;
+
         for(int i=0;i<3;i++){
-            if(triangles[curr_triangle].v[i]==index){isInside=true;break;}
+            if(triangles[t].v[i]==index){
+                res.insert(t);
+                if(res.find(triangles[t].t[(i+1)%3])==res.end())
+                    ctriangles.push_back(triangles[t].t[(i+1)%3]);
+                if(res.find(triangles[t].t[(i+2)%3])==res.end())
+                    ctriangles.push_back(triangles[t].t[(i+2)%3]);
+            }
         }
-        
-        if(!isInside) continue;
-        for(int i=0;i<3;i++){
-            if(triangles[curr_triangle].v[i]==index){continue;}
-        }
-        for(int i=0;i<3;i++){
-            if(trianglesChecked.find(triangles[curr_triangle].t[i])==trianglesChecked.end())
-                if(triangles[curr_triangle].t[i]!=-1)
-                    checkingTriangles.push_back(triangles[curr_triangle].t[i]);
-        }
-        
     }
-    return trianglesChecked;
+
+    return res;
 }
 
 float Triangulation::closestNeighbourDistance(int index){
@@ -1131,11 +1129,11 @@ void Triangulation::movePoint(int index, Vec2 delta){
     for(int t: nt){
         for(int i=0;i<3;i++){
             if(!legalize(t,triangles[t].t[i])){
-                __H_BREAKPOINT__;
+                // __H_BREAKPOINT__;
                 std::cout << "READD VERTEX" << std::endl;
                 vertices[index].pos-=delta;
-                __H_BREAKPOINT__;
                 auto rmvx = removeVertex(index);
+                // __H_BREAKPOINT__;
                 vertices[index].pos+=delta;
                 reAddVertex(rmvx);
                 return;
@@ -1144,22 +1142,82 @@ void Triangulation::movePoint(int index, Vec2 delta){
     }
 }
 
+// We assume that both bicells are ccw oriented
+bool Triangulation::isConvexBicell(int t1, int t2){
+    
+    assert(isCCW(t1)&&isCCW(t2));
+    assert(areConnected(t1,t2));
+
+    int i,j; // find which are the different indices
+    for(i=0;i<3;i++){
+        if(
+            triangles[t1].v[i]!=triangles[t2].v[0] &&
+            triangles[t1].v[i]!=triangles[t2].v[1] &&
+            triangles[t1].v[i]!=triangles[t2].v[2]
+        )
+            break;
+    }
+    for(j=0;j<3;j++){
+        if(
+            triangles[t2].v[j]!=triangles[t1].v[0] &&
+            triangles[t2].v[j]!=triangles[t1].v[1] &&
+            triangles[t2].v[j]!=triangles[t1].v[2]
+        )
+            break;
+    }
+
+    /*
+    //                   i
+    //                    ^
+    //                   / \
+    //                  /   \
+    //                 /     \
+    //        (i+1)%3 <-------> (j+1)%3
+    //                 \     /
+    //                  \   /
+    //                   \ /
+    //                    v 
+    //                   j   
+    */
+
+    std::vector<Vec2> bicell = {vertices[triangles[t1].v[(i+1)%3]].pos,vertices[triangles[t2].v[j]].pos,vertices[triangles[t2].v[(j+1)%3]].pos,vertices[triangles[t1].v[i]].pos};
+
+    for(i=0;i<4;i++){
+        Vec2 p0 = bicell[(i-1+4)%4];
+        Vec2 p1 = bicell[i];
+        Vec2 p2 = bicell[(i+1)%4];
+        Vec2 prev = p1-p0;
+        Vec2 act = p2-p1;
+        if(crossa(prev,act)<0) return false;
+    }
+
+    return true;
+}
+
 Triangulation::RemovedVertex Triangulation::removeVertex(int v){
     Vertex vx = vertices[v];
     std::set<int> nt = getNeighbourTriangles(v);
+    std::vector<int> ntv = std::vector<int>(nt.begin(),nt.end());
+    
     while(nt.size()>3){
-        int t = *nt.begin();
-        std::cout << nt.size() << std::endl;
-        for(int i=0;i<3;i++){
-            int f = triangles[t].t[i];
-            if(nt.find(f)!=nt.end()){
-                std::cout << "found " << t << " " << f << std::endl;
-                flip(t,f);
-                break;
+        __H_BREAKPOINT__;
+        int n = ntv.size();
+        bool found = false;
+        for(int i=0;i<n && !found;i++){
+            int t1 = ntv[i];
+            for(int j=0;j<n && !found;j++){
+                if(i==j)continue;
+                int t2 = ntv[j];
+                if(areConnected(t1,t2) && isConvexBicell(t1,t2)){
+                    if(flip(t1,t2))
+                        found = true;
+                }
             }
         }
         nt = getNeighbourTriangles(v);
+        ntv = std::vector<int>(nt.begin(),nt.end());
     }
+
     std::cout << nt.size() << std::endl;
     auto it = nt.begin();
     RemovedVertex res{{*it++,*it++,*it},v,vx};
@@ -1214,6 +1272,12 @@ void Triangulation::reAddVertex(Triangulation::RemovedVertex rmvx){
     triangles[f].t[2] = f2;
 
     vertices[p] = Vertex(rmvx.vx.pos,f);
+
+    assert(sanity(f)&&sanity(f1)&&sanity(f2));
+    assert(validTriangle(f)&&validTriangle(f1)&&validTriangle(f2));
+    assert(isCCW(f)&&isCCW(f1)&&isCCW(f2));
+    assert(integrity(f)&&integrity(f1)&&integrity(f2));
+    assert(frontTest(f)&&frontTest(f1)&&frontTest(f2));
 }
 
 std::set<int> Triangulation::getFRNN(int index, float r){

@@ -10,6 +10,7 @@ public:
     TriangulationSaker(Triangulation *t, float maxVel) : t(t), numP(t->vcount), maxVel(maxVel) {
         velocity = new Vec2[t->maxVertices];
         t->velocity = this->velocity;
+        initRandomVel();
     }
     ~TriangulationSaker(){
         delete velocity;
