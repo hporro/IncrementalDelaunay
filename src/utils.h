@@ -5,7 +5,7 @@ double crossa(Vec2 a, Vec2 b){
 }
 
 bool isLeft(Vec2 a, Vec2 b){
-    return crossa(a,b) > IN_TRIANGLE_EPS;
+    return crossa(a,b) >= IN_TRIANGLE_EPS;
 }
 
 bool isRight(Vec2 a, Vec2 b){

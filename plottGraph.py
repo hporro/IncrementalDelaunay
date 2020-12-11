@@ -56,23 +56,39 @@ class PlotMesh (gdb.Command):
         fig.update_yaxes(range=[float(mesh["p0"]["y"]), float(mesh["p2"]["y"])])
         fig.show()
 
-class OldPlotMesh (gdb.Command):
+
+class PlotVertexNeighbors (gdb.Command):
   def __init__ (self):
-      super (OldPlotMesh, self).__init__ ("OldPlotMesh", gdb.COMMAND_USER)
+      super (PlotVertexNeighbors, self).__init__ ("PlotVertexNeighbors", gdb.COMMAND_USER)
 
   def invoke (self, arg, from_tty):
-        mesh = gdb.parse_and_eval(arg)
-        figs = []
+        mesh = gdb.parse_and_eval(arg.split()[0])
+        v = int(gdb.parse_and_eval(arg.split()[1]))
+        x = []
+        y = []
         for i in range(mesh["tcount"]):
             triangle = mesh["triangles"][i]
-            vertices = (mesh["vertices"][triangle["v"][0]]["pos"]["x"],mesh["vertices"][triangle["v"][0]]["pos"]["y"],mesh["vertices"][triangle["v"][1]]["pos"]["x"],mesh["vertices"][triangle["v"][1]]["pos"]["y"],mesh["vertices"][triangle["v"][2]]["pos"]["x"],mesh["vertices"][triangle["v"][2]]["pos"]["y"])
-            fig = dict(type="path",path="M {0[0]} {0[1]} L {0[2]} {0[3]} L {0[4]} {0[5]} Z".format(vertices), line_color="Crimson")
-            figs.append(fig)
-        fig = go.Figure()
+            v_indices = (triangle["v"][0],triangle["v"][1],triangle["v"][2])
+            if(v in v_indices):
+                vertices = (mesh["vertices"][triangle["v"][0]]["pos"]["x"],mesh["vertices"][triangle["v"][0]]["pos"]["y"],mesh["vertices"][triangle["v"][1]]["pos"]["x"],mesh["vertices"][triangle["v"][1]]["pos"]["y"],mesh["vertices"][triangle["v"][2]]["pos"]["x"],mesh["vertices"][triangle["v"][2]]["pos"]["y"])
+                x.append(vertices[0])
+                x.append(vertices[2])
+                x.append(vertices[4])
+                x.append(vertices[0])
+                y.append(vertices[1])
+                y.append(vertices[3])
+                y.append(vertices[5])
+                y.append(vertices[1])
+                x.append(None)
+                y.append(None)
+
+        x = [float(i) if i!=None else None for i in x]
+        y = [float(i) if i!=None else None for i in y]
+        fig = go.Figure(go.Scatter(x=x, y=y, line_color="Crimson"))
         fig.update_xaxes(range=[float(mesh["p0"]["x"]), float(mesh["p1"]["x"])])
         fig.update_yaxes(range=[float(mesh["p0"]["y"]), float(mesh["p2"]["y"])])
         fig.show()
 
+PlotVertexNeighbors()
 PlotNeighbours()
-OldPlotMesh()
 PlotMesh()
