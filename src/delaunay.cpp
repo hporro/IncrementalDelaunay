@@ -106,10 +106,10 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP, bool logSearch 
         exactinit();
         initialized = true;
     }
-    float minx = 100000;
-    float miny = 100000;
-    float maxx =-100000;
-    float maxy =-100000;
+    __H_REAL__ minx = 100000;
+    __H_REAL__ miny = 100000;
+    __H_REAL__ maxx =-100000;
+    __H_REAL__ maxy =-100000;
 
     for(auto p: points){
         minx = std::min(minx,p.x);

@@ -39,9 +39,9 @@ public:
         glBindVertexArray(vao);
 
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        std::vector<Vec2> vecs(t->vcount);
-        for(int i=0;i<t->vcount;i++)vecs[i]=t->vertices[i].pos;
-        glBufferData(GL_ARRAY_BUFFER, t->vcount*sizeof(Vec2), &vecs[0], GL_STATIC_DRAW);
+        std::vector<glm::vec2> vecs(t->vcount);
+        for(int i=0;i<t->vcount;i++)vecs[i]=glm::vec2((float)t->vertices[i].pos.x,(float)t->vertices[i].pos.y);
+        glBufferData(GL_ARRAY_BUFFER, t->vcount*sizeof(glm::vec2), &vecs[0], GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         std::vector<unsigned int> inds(t->tcount*3);
@@ -64,10 +64,10 @@ public:
         sh.use();
         sh.setFloat("zoom",zoom);
         sh.setVec2("offset",glm::vec2(offset[0],offset[1]));
-        sh.setVec2("p0",t->p0);
-        sh.setVec2("p1",t->p1);
-        sh.setVec2("p2",t->p2);
-        sh.setVec2("p3",t->p3);
+        sh.setVec2("p0",glm::vec2(t->p0.x,t->p0.y));
+        sh.setVec2("p1",glm::vec2(t->p1.x,t->p1.y));
+        sh.setVec2("p2",glm::vec2(t->p2.x,t->p2.y));
+        sh.setVec2("p3",glm::vec2(t->p3.x,t->p3.y));
         sh.setVec3("aColor",glm::vec3(color[0],color[1],color[2]));
         glBindVertexArray(vao);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -78,10 +78,10 @@ public:
         sh.use();
         sh.setFloat("zoom",zoom);
         sh.setVec2("offset",glm::vec2(offset[0],offset[1]));
-        sh.setVec2("p0",t->p0);
-        sh.setVec2("p1",t->p1);
-        sh.setVec2("p2",t->p2);
-        sh.setVec2("p3",t->p3);
+        sh.setVec2("p0",glm::vec2(t->p0.x,t->p0.y));
+        sh.setVec2("p1",glm::vec2(t->p1.x,t->p1.y));
+        sh.setVec2("p2",glm::vec2(t->p2.x,t->p2.y));
+        sh.setVec2("p3",glm::vec2(t->p3.x,t->p3.y));
         sh.setVec3("aColor",glm::vec3(1-color[0],1-color[1],1-color[2]));
         glBindVertexArray(vao);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

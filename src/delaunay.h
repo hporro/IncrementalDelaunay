@@ -7,7 +7,8 @@
 #include <set>
 #include <glm/glm.hpp>
 
-typedef glm::vec2 Vec2;
+#define __H_REAL__ double
+typedef glm::dvec2 Vec2;
 
 class Triangle;
 
