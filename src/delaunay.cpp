@@ -48,9 +48,12 @@ bool Triangulation::isInside(int t, Vec2 p){
     Vec2 p1 = vertices[triangles[t].v[0]].pos;
     Vec2 p2 = vertices[triangles[t].v[1]].pos;
     Vec2 p3 = vertices[triangles[t].v[2]].pos;
+    return (orient2d(glm::value_ptr(p1),glm::value_ptr(p2),glm::value_ptr(p))>0) && 
+           (orient2d(glm::value_ptr(p2),glm::value_ptr(p3),glm::value_ptr(p))>0) &&
+           (orient2d(glm::value_ptr(p3),glm::value_ptr(p1),glm::value_ptr(p))>0);
     // b-a goes from a to b
-    if(isLeft(p2-p1,p-p1) && isLeft(p3-p2,p-p2) && isLeft(p1-p3,p-p3)) return true;
-    return false;
+    // if(isLeft(p2-p1,p-p1) && isLeft(p3-p2,p-p2) && isLeft(p1-p3,p-p3)) return true;
+    // return false;
 }
 
 bool Triangulation::isInside(int t, int v){
@@ -92,13 +95,17 @@ bool Triangulation::isInEdge(int t, Vec2 p){
     Vec2 p1 = vertices[triangles[t].v[0]].pos;
     Vec2 p2 = vertices[triangles[t].v[1]].pos;
     Vec2 p3 = vertices[triangles[t].v[2]].pos;
+
+    return (orient2d(glm::value_ptr(p1),glm::value_ptr(p2),glm::value_ptr(p))==0) && 
+           (orient2d(glm::value_ptr(p2),glm::value_ptr(p3),glm::value_ptr(p))==0) &&
+           (orient2d(glm::value_ptr(p3),glm::value_ptr(p1),glm::value_ptr(p))==0);
     // b-a goes from a to b
-    Vec2 a1 = p1-p2; Vec2 b1 = p-p2;
-    Vec2 a2 = p2-p3; Vec2 b2 = p-p3;
-    Vec2 a3 = p3-p1; Vec2 b3 = p-p1;
-    if(mightBeLeft(p2-p1,p-p1) && mightBeLeft(p3-p2,p-p2) && mightBeLeft(p1-p3,p-p3))
-    if( (a1[0]>=b1[0] && a1[1]>=b1[1]) || (a2[0]>=b2[0] && a2[1]>=b2[1]) || (a3[0]>=b3[0] && a3[1]>=b3[1]) ) return true;
-    return false;
+    // Vec2 a1 = p1-p2; Vec2 b1 = p-p2;
+    // Vec2 a2 = p2-p3; Vec2 b2 = p-p3;
+    // Vec2 a3 = p3-p1; Vec2 b3 = p-p1;
+    // if(mightBeLeft(p2-p1,p-p1) && mightBeLeft(p3-p2,p-p2) && mightBeLeft(p1-p3,p-p3))
+    // if( (a1[0]>=b1[0] && a1[1]>=b1[1]) || (a2[0]>=b2[0] && a2[1]>=b2[1]) || (a3[0]>=b3[0] && a3[1]>=b3[1]) ) return true;
+    // return false;
 }
 
 Triangulation::Triangulation(std::vector<Vec2> points, int numP, bool logSearch = true) :  doLogSearch(logSearch) {
@@ -414,10 +421,8 @@ bool Triangulation::legalize(int t1, int t2){
     }
     auto vs = getVerticesSharedByTriangles(t1,t2);
     
-    if(inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)> IN_CIRCLE_EPS &&
-    inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos)> IN_CIRCLE_EPS &&
-    triangleArea(t1)>AREA_TO_FLIP_EPS && triangleArea(t2)>AREA_TO_FLIP_EPS &&
-    mod(vertices[vs.first].pos-vertices[vs.second].pos)>EDGE_LENGTH_FLIP_EPS    
+    if(inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)> 0 &&
+    inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos) > 0 
     ) {
         // std::cout << "start flip " << t1 << " " << t2 << std::endl << std::flush;
         return flip(t1,t2);
@@ -502,7 +507,7 @@ void Triangulation::addPointInEdge(Vec2 v, int t0, int t1){
 void Triangulation::addPointInEdge(Vec2 v, int t){
 #if ASSERT_PROBLEMS
     assert(isCCW(t));
-    assert(isInEdge(t,v));
+    // assert(isInEdge(t,v));
     assert(integrity(t));
 #endif
     remem();
@@ -573,6 +578,7 @@ bool Triangulation::isCCW(int f){
     Vec2 p0 = vertices[triangles[f].v[0]].pos;
     Vec2 p1 = vertices[triangles[f].v[1]].pos;
     Vec2 p2 = vertices[triangles[f].v[2]].pos;
+    // return (orient2d(glm::value_ptr(p1),glm::value_ptr(p2),glm::value_ptr(p3))>0);
     if((crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0))>IN_TRIANGLE_EPS) return true;
     return false;
 }
@@ -1229,7 +1235,8 @@ bool Triangulation::isConvexBicell(int t1, int t2){
         Vec2 p2 = bicell[(i+1)%4];
         Vec2 prev = p1-p0;
         Vec2 act = p2-p1;
-        if(crossa(prev,act)<0) return false;
+        // if(crossa(prev,act)<0) return false;
+        if(orient2d(glm::value_ptr(p0),glm::value_ptr(p1),glm::value_ptr(p2))<=0) return false;
     }
 
     return true;
@@ -1257,10 +1264,6 @@ Triangulation::RemovedVertex Triangulation::removeVertex(int v){
         }
         nt = getNeighbourTriangles(v);
         ntv = std::vector<int>(nt.begin(),nt.end());
-    }
-
-    for(int i=0;i<3;i++){
-        
     }
 
     RemovedVertex res{{ntv[0],ntv[1],ntv[2]},v,vx};

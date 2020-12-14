@@ -1,3 +1,4 @@
+#include <glm/gtc/type_ptr.hpp>
 
 //HELPER FUNCTIONS
 double crossa(Vec2 a, Vec2 b){
@@ -33,9 +34,10 @@ double det(double a, double b, double c, double d, double e, double f, double g,
 }
 
 double inCircle(Vec2 a, Vec2 b, Vec2 c, Vec2 d){
-    return det( a.x-d.x,a.y-d.y,(a.x-d.x)*(a.x-d.x)+(a.y-d.y)*(a.y-d.y),
-                b.x-d.x,b.y-d.y,(b.x-d.x)*(b.x-d.x)+(b.y-d.y)*(b.y-d.y),
-                c.x-d.x,c.y-d.y,(c.x-d.x)*(c.x-d.x)+(c.y-d.y)*(c.y-d.y));
+    return incircle(glm::value_ptr(a),glm::value_ptr(b),glm::value_ptr(c),glm::value_ptr(d));
+    // return det( a.x-d.x,a.y-d.y,(a.x-d.x)*(a.x-d.x)+(a.y-d.y)*(a.y-d.y),
+    //             b.x-d.x,b.y-d.y,(b.x-d.x)*(b.x-d.x)+(b.y-d.y)*(b.y-d.y),
+    //             c.x-d.x,c.y-d.y,(c.x-d.x)*(c.x-d.x)+(c.y-d.y)*(c.y-d.y));
 }
 
 //gives the square of the length of a Vec2

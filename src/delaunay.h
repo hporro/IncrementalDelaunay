@@ -6,6 +6,7 @@
 #include <vector>
 #include <set>
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #define __H_REAL__ double
 typedef glm::dvec2 Vec2;
