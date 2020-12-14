@@ -1,5 +1,7 @@
 #include "delaunay.h"
 
+#define REAL double
+
 template<class T>
 T pow2(T a){
     return a*a;
@@ -10,8 +12,12 @@ T pow3(T a){
     return a*a*a;
 }
 
-inline double hmod(Vec2 a){
-    return sqrt(a.x*a.x + a.y*a.y);
+inline REAL hmod(Vec2 a){
+    return sqrt(a[0]*a[0] + a[1]*a[1]);
+}
+
+inline Vec2 operator*(Vec2 v, REAL d){
+    return Vec2(v.x*d,v.y*d);
 }
 
 class FluidSimulation {
@@ -19,24 +25,24 @@ public:
     Triangulation* t;
     int numP;
     Vec2* velocity;
-    float maxVel;
+    REAL maxVel;
 
-    float dt; // timestep of the simulation
-    float g; // gravity
+    REAL dt; // timestep of the simulation
+    REAL g; // gravity
 
-    float h; // interaction radius
-    float p0; // rest density
-    float k; // stiffness parameter
-    float* P; // pseudo pressure
-    float* p; // each particles density sum(pow2((1-rij/h)))
+    REAL h; // interaction radius
+    REAL p0; // rest density
+    REAL k; // stiffness parameter
+    REAL* P; // pseudo pressure
+    REAL* p; // each particles density sum(pow2((1-rij/h)))
 
-    float* p_near; // near density sum(pow3(1-rij/h)))
-    float k_near; // near density stiffness factor
-    float* P_near; // near pseudo pressure
+    REAL* p_near; // near density sum(pow3(1-rij/h)))
+    REAL k_near; // near density stiffness factor
+    REAL* P_near; // near pseudo pressure
     Vec2* dx;
     int* state_code; // particle state code {0=dont move, 1=water,}
 
-    FluidSimulation(Triangulation *t, float maxVel) : t(t), numP(t->vcount), maxVel(maxVel) {
+    FluidSimulation(Triangulation *t, REAL maxVel) : t(t), numP(t->vcount), maxVel(maxVel) {
         velocity = new Vec2[t->maxVertices];
         t->velocity = this->velocity;
         this->numP = t->vcount;
@@ -47,12 +53,12 @@ public:
         h = 35;
         p0 = 6;
         k = 0.005;
-        P = new float[numP];
-        p = new float[numP];
+        P = new REAL[numP];
+        p = new REAL[numP];
 
-        p_near = new float[numP];
+        p_near = new REAL[numP];
         k_near = 0.4;
-        P_near = new float[numP];
+        P_near = new REAL[numP];
 
         dx = new Vec2[numP];
 
@@ -68,7 +74,7 @@ public:
         delete velocity;
     }
 
-    void step(float dt){
+    void step(REAL dt){
         for(int i=0;i<numP;i++){
             p[i] = 0;
             p_near[i] = 0;
@@ -77,7 +83,7 @@ public:
         for(int i=0;i<numP;i++) {
             std::set<int> neighbours = t->getFRNN(i,h);
             for (int j: neighbours) {
-                float q = hmod(t->vertices[i].pos - t->vertices[j].pos) / h;
+                REAL q = hmod(t->vertices[i].pos - t->vertices[j].pos) / h;
                 if (q < 1 && i!=j) {
                     p[i] += pow2(1 - q);
                     p_near[i] += pow3(1 - q);
@@ -87,11 +93,11 @@ public:
             P_near[i] = k_near * p_near[i];
             dx[i] = Vec2{0, 0};
             for (int j: neighbours) {
-                float q = hmod(t->vertices[i].pos - t->vertices[j].pos) / h;
+                REAL q = hmod(t->vertices[i].pos - t->vertices[j].pos) / h;
                 if (q < 1 && i!=j) {
                     Vec2 rij = (t->vertices[j].pos - t->vertices[i].pos);
                     normalize(rij);
-                    Vec2 D = rij * (P[i] * (1 - q) + P_near[i] * pow2(1 - q));
+                    Vec2 D = rij * (REAL)(P[i] * (1 - q) + P_near[i] * pow2(1 - q));
                     D /= 2.0;
                     dx[i] -= D;
                 }
@@ -116,7 +122,7 @@ public:
             velocity[i] = Vec2{0,0};
         }
         for(int i=4;i<numP;i++){
-            velocity[i] = Vec2{maxVel*((float)i/numP),maxVel*((float)i/numP)};
+            velocity[i] = Vec2{maxVel*((REAL)i/numP),maxVel*((REAL)i/numP)};
         }
     }
 };

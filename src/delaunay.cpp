@@ -3,9 +3,13 @@
 #include "delaunay.h"
 #include "constants.h"
 
+#include "pred3d.cpp"
+static bool initialized = false;
+
 #include <queue>
 #include <algorithm>
 #include <csignal>
+#include <cassert>
 
 #include "utils.h"
 
@@ -54,7 +58,7 @@ bool Triangulation::isInside(int t, int v){
     return isInside(t,vertices[v].pos);
 }
 
-bool Triangulation::validTriangle(int t){
+bool Triangulation::validTriangle(int t){ // checks for repeated vertices or triangles
     if(t==-1)return true;
     bool res = true;
     if(t>=tcount)res=false;
@@ -93,12 +97,15 @@ bool Triangulation::isInEdge(int t, Vec2 p){
     Vec2 a2 = p2-p3; Vec2 b2 = p-p3;
     Vec2 a3 = p3-p1; Vec2 b3 = p-p1;
     if(mightBeLeft(p2-p1,p-p1) && mightBeLeft(p3-p2,p-p2) && mightBeLeft(p1-p3,p-p3))
-    if( (a1.x>=b1.x && a1.y>=b1.y) || (a2.x>=b2.x && a2.y>=b2.y) || (a3.x>=b3.x && a3.y>=b3.y) ) return true;
+    if( (a1[0]>=b1[0] && a1[1]>=b1[1]) || (a2[0]>=b2[0] && a2[1]>=b2[1]) || (a3[0]>=b3[0] && a3[1]>=b3[1]) ) return true;
     return false;
 }
 
 Triangulation::Triangulation(std::vector<Vec2> points, int numP, bool logSearch = true) :  doLogSearch(logSearch) {
-    
+    if(!initialized){
+        exactinit();
+        initialized = true;
+    }
     float minx = 100000;
     float miny = 100000;
     float maxx =-100000;
@@ -284,7 +291,7 @@ bool Triangulation::delaunayInsertion(Vec2 p){
 
     remem();
 
-    Vec2 initialPoint = (vertices[triangles[nextToMinOne].v[0]].pos+vertices[triangles[nextToMinOne].v[1]].pos+vertices[triangles[nextToMinOne].v[2]].pos)/3;
+    Vec2 initialPoint = (vertices[triangles[nextToMinOne].v[0]].pos+vertices[triangles[nextToMinOne].v[1]].pos+vertices[triangles[nextToMinOne].v[2]].pos)/3.0;
     int tri_index;
     if(doLogSearch) tri_index = findContainerTriangleSqrtSearch(p,initialPoint,nextToMinOne,-1);
     else tri_index = findContainerTriangleLinearSearch(p);
@@ -694,6 +701,14 @@ bool Triangulation::flip(int t1, int t2){
         }
     }
 
+#if ASSERT_PROBLEMS
+    __H_ASSERT__(sanity(t1)&&sanity(t2));
+    __H_ASSERT__(validTriangle(t1)&&validTriangle(t2));
+    __H_ASSERT__(integrity(t1)&&integrity(t2));
+    // __H_ASSERT__(isCCW(t1)&&isCCW(t2));
+    __H_ASSERT__(frontTest(t1)&&frontTest(t2));
+#endif
+
     //update f11
     if(f11!=-1)for(int i=0;i<3;i++){
         if(triangles[f11].t[i]==t1)triangles[f11].t[i]=t2;
@@ -703,13 +718,8 @@ bool Triangulation::flip(int t1, int t2){
         if(triangles[f21].t[i]==t2)triangles[f21].t[i]=t1;
     }
 
-#if ASSERT_PROBLEMS
-    __H_ASSERT__(sanity(t1)&&sanity(t2));
-    __H_ASSERT__(validTriangle(t1)&&validTriangle(t2));
-    __H_ASSERT__(integrity(t1)&&integrity(t2));
-    __H_ASSERT__(isCCW(t1)&&isCCW(t2));
-    __H_ASSERT__(frontTest(t1)&&frontTest(t2));
-#endif
+    __H_ASSERT__(validTriangle(f11));
+    __H_ASSERT__(validTriangle(f21));
 
     vertices[p11].tri_index=t1;
     vertices[p20].tri_index=t1;
@@ -718,6 +728,8 @@ bool Triangulation::flip(int t1, int t2){
     vertices[p12].tri_index=t2;
     vertices[p10].tri_index=t2;
     vertices[p20].tri_index=t2;
+
+    assert(allSanity());
 
     updateNextToMinOne(t1);
     updateNextToMinOne(t2);
@@ -853,6 +865,12 @@ bool Triangulation::flipNoChecking(int t1, int t2){
     __H_ASSERT__(frontTest(f12));
     __H_ASSERT__(frontTest(f21));
     __H_ASSERT__(frontTest(f22));
+    __H_ASSERT__(sanity(t1));
+    __H_ASSERT__(sanity(t2));
+    __H_ASSERT__(sanity(f11));
+    __H_ASSERT__(sanity(f12));
+    __H_ASSERT__(sanity(f21));
+    __H_ASSERT__(sanity(f22));
 #endif
 
     vertices[p11].tri_index=t1;
@@ -862,6 +880,8 @@ bool Triangulation::flipNoChecking(int t1, int t2){
     vertices[p12].tri_index=t2;
     vertices[p10].tri_index=t2;
     vertices[p20].tri_index=t2;
+
+    assert(allSanity());
 
     updateNextToMinOne(t1);
     updateNextToMinOne(t2);
@@ -975,7 +995,7 @@ void Triangulation::centroidAll(double angle){
 
                 //if(points[3]==-1)continue;
 
-                Vec2 p = (vertices[points[0]].pos+vertices[points[1]].pos+vertices[points[2]].pos+vertices[points[3]].pos)/4;
+                Vec2 p = (vertices[points[0]].pos+vertices[points[1]].pos+vertices[points[2]].pos+vertices[points[3]].pos)/4.0;
 
                 delaunayInsertion(p);
             }
@@ -986,7 +1006,7 @@ void Triangulation::centroidAll(double angle){
 void Triangulation::addCentroids(){
     int actTcount = tcount;
     for(int i=0;i<actTcount;i++){
-        Vec2 p = (vertices[triangles[i].v[0]].pos + vertices[triangles[i].v[1]].pos + vertices[triangles[i].v[2]].pos)/3;
+        Vec2 p = (vertices[triangles[i].v[0]].pos + vertices[triangles[i].v[1]].pos + vertices[triangles[i].v[2]].pos)/3.0;
         delaunayInsertion(p);
     }
 }
@@ -996,7 +1016,7 @@ void Triangulation::longestEdgeBisect(int t){
     for(int i=0;i<3;i++){
         if(triangles[t].t[i]==-1) op1 = i;
     }
-    Vec2 p = (vertices[triangles[t].v[(op1+1)%3]].pos + vertices[triangles[t].v[(op1+2)%3]].pos)/2;
+    Vec2 p = (vertices[triangles[t].v[(op1+1)%3]].pos + vertices[triangles[t].v[(op1+2)%3]].pos)/2.0;
     addPointInEdge(p,t);
 }
 
@@ -1288,27 +1308,21 @@ void Triangulation::reAddVertex(Triangulation::RemovedVertex rmvx){
     triangles[rmvx.t[1]] = Triangle(-1,-1,-1,-1,-1,-1);
     triangles[rmvx.t[2]] = Triangle(-1,-1,-1,-1,-1,-1);
 
+    for(int i=0;i<3;i++){
+        legalize(rmvx.t[0],triangles[rmvx.t[0]].t[i]);
+    }
+
+    Vec2 initialPoint = Vec2(vertices[triangles[nextToMinOne].v[0]].pos+vertices[triangles[nextToMinOne].v[1]].pos+vertices[triangles[nextToMinOne].v[2]].pos)/3.0;
+
+    int f = findContainerTriangleLinearSearch(rmvx.vx.pos); // we have to find the triangle where we'll insert put the point
+
     __H_BREAKPOINT__;
 
-    Vec2 initialPoint = (vertices[triangles[nextToMinOne].v[0]].pos+vertices[triangles[nextToMinOne].v[1]].pos+vertices[triangles[nextToMinOne].v[2]].pos)/3;
-
-    int f;
-    if(isInside(triangles[rmvx.t[0]].t[0],rmvx.vx.pos)){
-        f = triangles[rmvx.t[0]].t[0];
-    }
-    else if(isInside(triangles[rmvx.t[0]].t[1],rmvx.vx.pos)){
-        f = triangles[rmvx.t[0]].t[1];
-    }
-    else if(isInside(triangles[rmvx.t[0]].t[2],rmvx.vx.pos)){
-        f = triangles[rmvx.t[0]].t[2];
-    }
-    else{
-        f = findContainerTriangleLinearSearch(rmvx.vx.pos); // we have to find the triangle where we'll insert put the point
-    }
     int f1 = rmvx.t[1]; // we reuse the indices
     int f2 = rmvx.t[2]; // we reuse the indices
 
     __H_BREAK_ASSERT__(f!=f1 && f!=f2);
+    __H_BREAK_ASSERT__(sanity(f));
 
     int p = rmvx.v;
 
@@ -1347,6 +1361,8 @@ void Triangulation::reAddVertex(Triangulation::RemovedVertex rmvx){
 
     __H_BREAK_ASSERT__(isCCW(f)&&isCCW(f1)&&isCCW(f2));
     __H_BREAK_ASSERT__(frontTest(f)&&frontTest(f1)&&frontTest(f2));
+    __H_BREAK_ASSERT__(sanity(f)&&sanity(f1)&&sanity(f2));
+
 }
 
 std::set<int> Triangulation::getFRNN(int index, float r){
@@ -1373,4 +1389,10 @@ std::set<int> Triangulation::getFRNN(int index, float r){
         trianglesChecked.insert(curr_triangle);
     }
     return neighbours;
+}
+
+bool Triangulation::allSanity(){
+    bool res = true;
+    for(int i=0;i<tcount;i++)if(!sanity(i)){std::cout << i << std::endl;res = false;}
+    return res;
 }

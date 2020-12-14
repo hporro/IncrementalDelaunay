@@ -97,25 +97,25 @@ int main(int argn, char** argv){
     float maxVel = 10;
 
     float boundSize = 300;
-    Vec2 p10 = Vec2(-boundSize,-boundSize);
-    Vec2 p11 = Vec2(boundSize,-boundSize);
-    Vec2 p12 = Vec2(boundSize,boundSize);
-    Vec2 p13 = Vec2(-boundSize,boundSize);
+    Vec2 p10 = Vec2{-boundSize,-boundSize};
+    Vec2 p11 = Vec2{boundSize,-boundSize};
+    Vec2 p12 = Vec2{boundSize,boundSize};
+    Vec2 p13 = Vec2{-boundSize,boundSize};
 
     std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
-    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_grid(std::sqrt(numP),std::sqrt(numP),p10+Vec2(80,40),Vec2(p11.x/8+80,p11.y+40),Vec2(p12.x/8+80,p12.y/4+40),Vec2(p13.x+80,p13.y/4+40));
+    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_grid(std::sqrt(numP),std::sqrt(numP),p10+Vec2{80,40},Vec2{p11[0]/8+80,p11[1]+40},Vec2{p12[0]/8+80,p12[1]/4+40},Vec2{p13[0]+80,p13[1]/4+40});
 
     for(int i=0;i<100;i++){
         float alpha = i/100.0;
-        points2.push_back((p10+Vec2(2,0))*alpha+(p11+Vec2(-2,0))*(1-alpha));
+        points2.push_back((p10+Vec2{2,0})*alpha+(p11+Vec2{-2,0})*(1-alpha));
     }
     for(int i=0;i<100;i++){
         float alpha = i/100.0;
-        points2.push_back((p10+Vec2(2,0))*alpha+(p13+Vec2(-2,0))*(1-alpha));
+        points2.push_back((p10+Vec2{2,0})*alpha+(p13+Vec2{-2,0})*(1-alpha));
     }
     for(int i=0;i<100;i++){
         float alpha = i/100.0;
-        points2.push_back((p11+Vec2(5,0))*alpha+(p12+Vec2(-2,0))*(1-alpha));
+        points2.push_back((p11+Vec2{5,0})*alpha+(p12+Vec2{-2,0})*(1-alpha));
     }
     // for(int i=0;i<100;i++){
     //     float alpha = i/100.0;

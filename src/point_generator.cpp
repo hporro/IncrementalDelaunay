@@ -1,6 +1,7 @@
 #include <vector>
 #include <random>
 #include <iostream>
+#include <cassert>
 
 #include "constants.h"
 #include "delaunay.h"

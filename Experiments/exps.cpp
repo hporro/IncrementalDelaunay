@@ -33,10 +33,10 @@ int main() {
 	std::vector<double> lins;
 
 	for(auto numP: numPs){
-		Vec2 p10 = Vec2(-0.8,-0.8);
-		Vec2 p11 = Vec2(0.8,-0.8);
-		Vec2 p12 = Vec2(0.8,0.8);
-		Vec2 p13 = Vec2(-0.8,0.8);
+		Vec2 p10 = Vec2{-0.8,-0.8};
+		Vec2 p11 = Vec2{0.8,-0.8 };
+		Vec2 p12 = Vec2{0.8,0.8  };
+		Vec2 p13 = Vec2{-0.8,0.8 };
 		std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
 
 		logs.push_back(take_time_triangulation(points,make_log_triangulation));

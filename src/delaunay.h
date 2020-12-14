@@ -67,6 +67,7 @@ public:
     bool areConnected(int,int);
     bool frontTest(int);
     bool sanity(int);
+    bool allSanity();
     bool isCCW(int f); // check if a triangle, in the position f of the triangles array, is ccw
     bool integrity(int t);
     bool validTriangle(int t);

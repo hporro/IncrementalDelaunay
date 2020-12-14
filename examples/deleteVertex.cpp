@@ -97,10 +97,10 @@ int main(int argn, char** argv){
     float maxVel = 10;
 
     float boundSize = 300;
-    Vec2 p10 = Vec2(-boundSize,-boundSize);
-    Vec2 p11 = Vec2(boundSize,-boundSize);
-    Vec2 p12 = Vec2(boundSize,boundSize);
-    Vec2 p13 = Vec2(-boundSize,boundSize);
+    Vec2 p10 = Vec2{-boundSize,-boundSize};
+    Vec2 p11 = Vec2{boundSize,-boundSize };
+    Vec2 p12 = Vec2{boundSize,boundSize  };
+    Vec2 p13 = Vec2{-boundSize,boundSize };
 
     std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
 
