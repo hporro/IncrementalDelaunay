@@ -93,3 +93,9 @@ add_executable(deleteVertex examples/deleteVertex.cpp)
 target_link_libraries(deleteVertex PRIVATE delaunay_visual glfw gl3w DelaunayGUI ${CMAKE_DL_LIBS})
 target_include_directories(deleteVertex PRIVATE src)
 target_include_directories(deleteVertex PRIVATE extern)
+
+# Main app3: Playground to test the deleteVertex and ReaddVertex methods 
+add_executable(deleteVertexsmol examples/littleDeleteVertex.cpp)
+target_link_libraries(deleteVertexsmol PRIVATE delaunay_visual glfw gl3w DelaunayGUI ${CMAKE_DL_LIBS})
+target_include_directories(deleteVertexsmol PRIVATE src)
+target_include_directories(deleteVertexsmol PRIVATE extern)

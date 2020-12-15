@@ -109,7 +109,6 @@ public:
     struct RemovedVertex{
         int t[3]; // indices to the triangles array
         int v; // index to the vertices array
-        Vertex vx; // vertex info
     };
     RemovedVertex removeVertex(int v); // removes a vertex from a triangulation, and returns it
     void reAddVertex(RemovedVertex rmvx); // add a vertex when it was previously deleted

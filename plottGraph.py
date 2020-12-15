@@ -56,6 +56,35 @@ class PlotMesh (gdb.Command):
         fig.update_yaxes(range=[float(mesh["p0"]["y"]), float(mesh["p2"]["y"])])
         fig.show()
 
+class PlotFilledMesh (gdb.Command):
+  def __init__ (self):
+      super (PlotFilledMesh, self).__init__ ("PlotFilledMesh", gdb.COMMAND_USER)
+
+  def invoke (self, arg, from_tty):
+        mesh = gdb.parse_and_eval(arg)
+        x = []
+        y = []
+        for i in range(mesh["tcount"]):
+            triangle = mesh["triangles"][i]
+            vertices = (mesh["vertices"][triangle["v"][0]]["pos"]["x"],mesh["vertices"][triangle["v"][0]]["pos"]["y"],mesh["vertices"][triangle["v"][1]]["pos"]["x"],mesh["vertices"][triangle["v"][1]]["pos"]["y"],mesh["vertices"][triangle["v"][2]]["pos"]["x"],mesh["vertices"][triangle["v"][2]]["pos"]["y"])
+            x.append(vertices[0])
+            x.append(vertices[2])
+            x.append(vertices[4])
+            x.append(vertices[0])
+            y.append(vertices[1])
+            y.append(vertices[3])
+            y.append(vertices[5])
+            y.append(vertices[1])
+            x.append(None)
+            y.append(None)
+
+        x = [float(i) if i!=None else None for i in x]
+        y = [float(i) if i!=None else None for i in y]
+        fig = go.Figure(go.Scatter(x=x, y=y, line_color="Crimson",fill="toself"))
+        fig.update_xaxes(range=[float(mesh["p0"]["x"]), float(mesh["p1"]["x"])])
+        fig.update_yaxes(range=[float(mesh["p0"]["y"]), float(mesh["p2"]["y"])])
+        fig.show()
+
 
 class PlotVertexNeighbors (gdb.Command):
   def __init__ (self):
@@ -92,3 +121,4 @@ class PlotVertexNeighbors (gdb.Command):
 PlotVertexNeighbors()
 PlotNeighbours()
 PlotMesh()
+PlotFilledMesh()
