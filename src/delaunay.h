@@ -50,7 +50,6 @@ public:
     void addPointInEdge(Vec2 point, int t1, int t2);
     void addPointInEdge(Vec2 point, int t);
     bool flip(int t1, int t2);
-    bool flipNoChecking(int t1, int t2);
     int findContainerTriangleLinearSearch(Vec2 p);
     int findContainerTriangleSqrtSearch(Vec2 p, int prop);
     int findCHTriangle(int guess);

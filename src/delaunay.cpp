@@ -549,236 +549,70 @@ double Triangulation::triangleArea(int f){
 
 bool Triangulation::flip(int t1, int t2){
 
-    Triangle pt1 = triangles[t1];
-    Triangle pt2 = triangles[t2];
+    int i;
+    if(triangles[t1].t[0] == t2) { i=0; }
+    else if (triangles[t1].t[1] == t2) { i=1; }
+    else { i=2; }
 
-#if ASSERT_PROBLEMS
-    __H_ASSERT__(sanity(t1)&&sanity(t2));
-    __H_ASSERT__(areConnected(t1,t2));
-    __H_ASSERT__(validTriangle(t1)&&validTriangle(t2));
-    __H_ASSERT__(isCCW(t1)&&isCCW(t2));
-    __H_ASSERT__(integrity(t1)&&integrity(t2));
-    __H_ASSERT__(frontTest(t1)&&frontTest(t2));
-#endif
+    int j;
+    if(triangles[t2].t[0] == t1) { j=0; }
+    else if (triangles[t2].t[1] == t1) { j=1; }
+    else { j=2; }
 
-    int p10,p11,p12,p20,p21,p22;
-    int f10,f11,f12,f20,f21,f22;
+    int p10 = triangles[t1].v[i];
+    int p11 = triangles[t1].v[(i+1)%3];
+    int p12 = triangles[t1].v[(i+2)%3];
 
-    p10 = triangles[t1].v[0];
-    p11 = triangles[t1].v[1];
-    p12 = triangles[t1].v[2];
-    f10 = triangles[t1].t[0];
-    f11 = triangles[t1].t[1];
-    f12 = triangles[t1].t[2];
+    int f10 = triangles[t1].t[i];
+    int f11 = triangles[t1].t[(i+1)%3];
+    int f12 = triangles[t1].t[(i+2)%3];
 
-    p20 = triangles[t2].v[0];
-    p21 = triangles[t2].v[1];
-    p22 = triangles[t2].v[2];
-    f20 = triangles[t2].t[0];
-    f21 = triangles[t2].t[1];
-    f22 = triangles[t2].t[2];
+    int p20 = triangles[t2].v[j];
+    int p21 = triangles[t2].v[(j+1)%3];
+    int p22 = triangles[t2].v[(j+2)%3];
 
-    //if(f10 == t2)
-    if(f11 == t2){ // rotated 1 to the right
-        p10 = triangles[t1].v[1];
-        p11 = triangles[t1].v[2];
-        p12 = triangles[t1].v[0];
-        f10 = triangles[t1].t[1];
-        f11 = triangles[t1].t[2];
-        f12 = triangles[t1].t[0];
-    }
-    if(f12 == t2){ // rotated 2 to the right
-        p10 = triangles[t1].v[2];
-        p11 = triangles[t1].v[0];
-        p12 = triangles[t1].v[1];
-        f10 = triangles[t1].t[2];
-        f11 = triangles[t1].t[0];
-        f12 = triangles[t1].t[1];
-    }
-    //if(f20 == t1)
-    if(f21 == t1){ 
-        p20 = triangles[t2].v[1];
-        p21 = triangles[t2].v[2];
-        p22 = triangles[t2].v[0];
-        f20 = triangles[t2].t[1];
-        f21 = triangles[t2].t[2];
-        f22 = triangles[t2].t[0];
-    }
-    if(f22 == t1){ 
-        p20 = triangles[t2].v[2];
-        p21 = triangles[t2].v[0];
-        p22 = triangles[t2].v[1];
-        f20 = triangles[t2].t[2];
-        f21 = triangles[t2].t[0];
-        f22 = triangles[t2].t[1];
-    }
+    int f20 = triangles[t2].t[j];
+    int f21 = triangles[t2].t[(j+1)%3];
+    int f22 = triangles[t2].t[(j+2)%3];
 
-    __H_ASSERT__(f10==t2);
-    __H_ASSERT__(f20==t1);
+    __H_BREAK_ASSERT__(f10==t2);
+    __H_BREAK_ASSERT__(f20==t1);
+    __H_BREAK_ASSERT__(p12==p21);
+    __H_BREAK_ASSERT__(p22==p11);
+
+    triangles[t1].v[0] = p11;
+    triangles[t1].v[1] = p20;
+    triangles[t1].v[2] = p10;
+
+    vertices[p11].tri_index = t1;
+    vertices[p20].tri_index = t1;
+    vertices[p10].tri_index = t1;
 
     triangles[t1].t[0] = t2;
     triangles[t1].t[1] = f12;
     triangles[t1].t[2] = f21;
-    triangles[t1].v[0] = p11; __H_ASSERT__(p11==p22);
-    triangles[t1].v[1] = p20;
-    triangles[t1].v[2] = p10;
+
+    triangles[t2].v[0] = p12;
+    triangles[t2].v[1] = p10;
+    triangles[t2].v[2] = p20;
+
+    vertices[p12].tri_index = t2;
 
     triangles[t2].t[0] = t1;
     triangles[t2].t[1] = f22;
     triangles[t2].t[2] = f11;
-    triangles[t2].v[0] = p12; __H_ASSERT__(p12==p21);
-    triangles[t2].v[1] = p10;
-    triangles[t2].v[2] = p20;
 
-#if ASSERT_PROBLEMS
-    __H_ASSERT__(validTriangle(t1)&&validTriangle(t2));
-    __H_ASSERT__(integrity(t1)&&integrity(t2));
-    __H_ASSERT__(isCCW(t1)&&isCCW(t2));
-    __H_ASSERT__(frontTest(t1)&&frontTest(t2));
-#endif
-
-    //update f11
-    if(f11!=-1)for(int i=0;i<3;i++){
-        if(triangles[f11].t[i]==t1)triangles[f11].t[i]=t2;
-    }
-    //update f21
-    if(f21!=-1)for(int i=0;i<3;i++){
-        if(triangles[f21].t[i]==t2)triangles[f21].t[i]=t1;
+    if(f11!=-1) {
+        for(int k=0;k<3;k++) {
+            if (triangles[f11].t[k] == t1) { triangles[f11].t[k] = t2; }
+        }
     }
 
-    __H_ASSERT__(sanity(t1)&&sanity(t2));
-    __H_ASSERT__(validTriangle(f11));
-    __H_ASSERT__(validTriangle(f21));
-
-    vertices[p11].tri_index=t1;
-    vertices[p20].tri_index=t1;
-    vertices[p10].tri_index=t1;
-
-    vertices[p12].tri_index=t2;
-    vertices[p10].tri_index=t2;
-    vertices[p20].tri_index=t2;
-
-
-    return true;
-}
-
-bool Triangulation::flipNoChecking(int t1, int t2){
-    Triangle pt1 = triangles[t1];
-    Triangle pt2 = triangles[t2];
-
-#if ASSERT_PROBLEMS
-    __H_ASSERT__(validTriangle(t1)&&validTriangle(t2));
-    __H_ASSERT__(integrity(t1)&&integrity(t2));
-    __H_ASSERT__(frontTest(t1)&&frontTest(t2));
-#endif
-
-    int p10,p11,p12,p20,p21,p22;
-    int f10,f11,f12,f20,f21,f22;
-
-    p10 = triangles[t1].v[0];
-    p11 = triangles[t1].v[1];
-    p12 = triangles[t1].v[2];
-    f10 = triangles[t1].t[0];
-    f11 = triangles[t1].t[1];
-    f12 = triangles[t1].t[2];
-
-    p20 = triangles[t2].v[0];
-    p21 = triangles[t2].v[1];
-    p22 = triangles[t2].v[2];
-    f20 = triangles[t2].t[0];
-    f21 = triangles[t2].t[1];
-    f22 = triangles[t2].t[2];
-
-    //if(f10 == t2)
-    if(f11 == t2){ // rotated 1 to the right
-        p10 = triangles[t1].v[1];
-        p11 = triangles[t1].v[2];
-        p12 = triangles[t1].v[0];
-        f10 = triangles[t1].t[1];
-        f11 = triangles[t1].t[2];
-        f12 = triangles[t1].t[0];
+    if(f21!=-1) {
+        for(int k=0;k<3;k++) {
+            if (triangles[f21].t[k] == t2) { triangles[f21].t[k] = t1; }
+        }
     }
-    if(f12 == t2){ // rotated 2 to the right
-        p10 = triangles[t1].v[2];
-        p11 = triangles[t1].v[0];
-        p12 = triangles[t1].v[1];
-        f10 = triangles[t1].t[2];
-        f11 = triangles[t1].t[0];
-        f12 = triangles[t1].t[1];
-    }
-    //if(f20 == t1)
-    if(f21 == t1){ 
-        p20 = triangles[t2].v[1];
-        p21 = triangles[t2].v[2];
-        p22 = triangles[t2].v[0];
-        f20 = triangles[t2].t[1];
-        f21 = triangles[t2].t[2];
-        f22 = triangles[t2].t[0];
-    }
-    if(f22 == t1){ 
-        p20 = triangles[t2].v[2];
-        p21 = triangles[t2].v[0];
-        p22 = triangles[t2].v[1];
-        f20 = triangles[t2].t[2];
-        f21 = triangles[t2].t[0];
-        f22 = triangles[t2].t[1];
-    }
-
-    __H_ASSERT__(f20==t1 && f10==t2);
-
-    triangles[t1].t[0] = t2;
-    triangles[t1].t[1] = f12;
-    triangles[t1].t[2] = f21;
-    triangles[t1].v[0] = p11; __H_ASSERT__(p11==p22);
-    triangles[t1].v[1] = p20;
-    triangles[t1].v[2] = p10;
-    
-    triangles[t2].t[0] = t1;
-    triangles[t2].t[1] = f22;
-    triangles[t2].t[2] = f11;
-    triangles[t2].v[0] = p12; __H_ASSERT__(p12==p21);
-    triangles[t2].v[1] = p10;
-    triangles[t2].v[2] = p20;
-
-#if ASSERT_PROBLEMS
-    __H_ASSERT__(validTriangle(t1)&&validTriangle(t2));
-    __H_ASSERT__(isCCW(t1));
-    __H_ASSERT__(isCCW(t2));
-    __H_ASSERT__(integrity(t1)&&integrity(t2));
-    __H_ASSERT__(frontTest(t1));
-    __H_ASSERT__(frontTest(t2));
-    __H_ASSERT__(frontTest(f11));
-    __H_ASSERT__(frontTest(f12));
-    __H_ASSERT__(frontTest(f21));
-    __H_ASSERT__(frontTest(f22));
-    __H_ASSERT__(sanity(t1));
-    __H_ASSERT__(sanity(t2));
-#endif
-
-    //update f11
-    if(f11!=-1)for(int i=0;i<3;i++){
-        if(triangles[f11].t[i]==t1)triangles[f11].t[i]=t2;
-    }
-    //update f21
-    if(f21!=-1)for(int i=0;i<3;i++){
-        if(triangles[f21].t[i]==t2)triangles[f21].t[i]=t1;
-    }
-#if ASSERT_PROBLEMS
-    assert(sanity(f11));
-    assert(sanity(f12));
-    assert(sanity(f21));
-    assert(sanity(f22));
-#endif
-
-    vertices[p11].tri_index=t1;
-    vertices[p20].tri_index=t1;
-    vertices[p10].tri_index=t1;
-
-    vertices[p12].tri_index=t2;
-    vertices[p10].tri_index=t2;
-    vertices[p20].tri_index=t2;
-
-//    assert(allSanity());
 
     return true;
 }
