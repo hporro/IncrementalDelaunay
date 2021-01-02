@@ -227,12 +227,6 @@ void Triangulation::addPointInside(Vec2 v, int tri_index){
     triangles[f].t[2] = f2;
 
     vertices[p] = Vertex(v,f);
-
-    updateNextToMinOne(f);
-    updateNextToMinOne(f1);
-    updateNextToMinOne(f2);
-    updateNextToMinOne(t1);
-    updateNextToMinOne(t2);
 }
 
 int Triangulation::findContainerTriangleLinearSearch(Vec2 p){
@@ -276,19 +270,11 @@ int Triangulation::findContainerTriangleSqrtSearch(Vec2 p, int prop){
 }
 
 bool Triangulation::delaunayInsertion(Vec2 p){
-#if ASSERT_PROBLEMS
-    assert(
-        triangles[nextToMinOne].t[0]==-1 ||
-        triangles[nextToMinOne].t[1]==-1 ||
-        triangles[nextToMinOne].t[2]==-1
-    );
-#endif
 
     remem();
 
-    Vec2 initialPoint = (vertices[triangles[nextToMinOne].v[0]].pos+vertices[triangles[nextToMinOne].v[1]].pos+vertices[triangles[nextToMinOne].v[2]].pos)/3.0;
-    int tri_index;
-    if(doLogSearch) tri_index = findContainerTriangleSqrtSearch(p,nextToMinOne);
+    int tri_index = -1;
+    if(doLogSearch) tri_index = findContainerTriangleSqrtSearch(p,tcount-1);
     else tri_index = findContainerTriangleLinearSearch(p);
     
     Vec2 points[] = {vertices[triangles[tri_index].v[0]].pos,vertices[triangles[tri_index].v[1]].pos,vertices[triangles[tri_index].v[2]].pos};
@@ -463,11 +449,6 @@ void Triangulation::addPointInEdge(Vec2 v, int t0, int t1){
     triangles[t0].t[(t0_v+1)%3] = t2;
     triangles[t1].v[(t1_v+1)%3] = p;
     triangles[t1].t[(t1_v+2)%3] = t3;
-
-    updateNextToMinOne(t0);
-    updateNextToMinOne(t1);
-    updateNextToMinOne(t2);
-    updateNextToMinOne(t3);
     
     remem();
 
@@ -521,9 +502,6 @@ void Triangulation::addPointInEdge(Vec2 v, int t){
     assert(integrity(t1));
     assert(integrity(f2));
 #endif
-    updateNextToMinOne(t);
-    updateNextToMinOne(t1);
-    updateNextToMinOne(f2);
 
     remem();
 }
@@ -567,13 +545,6 @@ double Triangulation::triangleArea(int f){
     Vec2 p1 = vertices[triangles[f].v[1]].pos;
     Vec2 p2 = vertices[triangles[f].v[2]].pos;
     return (crossa(p0,p1)+crossa(p1,p2)+crossa(p2,p0));
-}
-
-void Triangulation::updateNextToMinOne(int t){
-    if(t==-1)return;
-    for(int i=0;i<3;i++){
-        if(triangles[t].t[i]==-1)nextToMinOne=t;
-    }
 }
 
 bool Triangulation::flip(int t1, int t2){
@@ -687,10 +658,6 @@ bool Triangulation::flip(int t1, int t2){
     vertices[p10].tri_index=t2;
     vertices[p20].tri_index=t2;
 
-//    assert(allSanity());
-
-    updateNextToMinOne(t1);
-    updateNextToMinOne(t2);
 
     return true;
 }
@@ -812,9 +779,6 @@ bool Triangulation::flipNoChecking(int t1, int t2){
     vertices[p20].tri_index=t2;
 
 //    assert(allSanity());
-
-    updateNextToMinOne(t1);
-    updateNextToMinOne(t2);
 
     return true;
 }

@@ -93,9 +93,6 @@ public:
     int oedgecount = 0;
     int point_being_moved = -1;
 
-    int nextToMinOne = 0;
-    void updateNextToMinOne(int t);
-
     bool doLogSearch = true;
 
     float a;
