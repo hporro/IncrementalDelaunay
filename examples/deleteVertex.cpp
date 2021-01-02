@@ -93,8 +93,8 @@ int main(int argn, char** argv){
         return 1;
     }
 
-    int numP = 400;
-    float maxVel = 10;
+    int numP = 800;
+    float maxVel = 100;
 
     float boundSize = 300;
     Vec2 p10 = Vec2{-boundSize,-boundSize};

@@ -52,7 +52,7 @@ public:
     bool flip(int t1, int t2);
     bool flipNoChecking(int t1, int t2);
     int findContainerTriangleLinearSearch(Vec2 p);
-    int findContainerTriangleSqrtSearch(Vec2 p, Vec2 initialPoint, int prop, int cameFrom);
+    int findContainerTriangleSqrtSearch(Vec2 p, int prop);
     int findCHTriangle(int guess);
 
     std::set<int> getNeighbours(int index);

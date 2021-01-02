@@ -48,7 +48,8 @@ public:
         this->numP = t->vcount;
 
         dt = 1.0/60.0;
-        g = 0.9;
+        // g = 0.9;
+        g = 0.0;
 
         h = 35;
         p0 = 6;

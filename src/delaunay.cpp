@@ -249,44 +249,28 @@ int Triangulation::findContainerTriangleLinearSearch(Vec2 p){
     return -1;
 }
 
-int Triangulation::findContainerTriangleSqrtSearch(Vec2 p, Vec2 initialPoint, int prop, int cameFrom){
+int Triangulation::findContainerTriangleSqrtSearch(Vec2 p, int prop){
     if(isInside(prop,p))return prop;
+    if(isInEdge(prop,p))return prop;
 
-    int *visited = new int[tcount];
-    for(int i=0;i<tcount;i++)visited[i]=0;
+    Vec2 v = (vertices[triangles[prop].v[0]].pos+vertices[triangles[prop].v[1]].pos+vertices[triangles[prop].v[2]].pos)/3.0;
 
-    Vec2 v = initialPoint;
-
-    std::vector<int> q(10);
-    q.push_back(prop);
-
-    while(!q.empty()){
-        int t = q[q.size()-1];
-        if(isInside(t,p))return t;
-        if(isInEdge(t,p))return t;
-        q.pop_back();
-        for(int i=0;i<3;i++){
-            int f = triangles[t].t[i];
-            if(f==-1)continue;
-            Vec2 a = vertices[triangles[t].v[(i+1)%3]].pos;
-            Vec2 b = vertices[triangles[t].v[(i+2)%3]].pos;
-            if(
-                ((orient2d(glm::value_ptr(v),glm::value_ptr(p),glm::value_ptr(a))>=0) && 
-                (orient2d(glm::value_ptr(v),glm::value_ptr(b),glm::value_ptr(p))>=0)) ||
-                ((orient2d(glm::value_ptr(v),glm::value_ptr(p),glm::value_ptr(b))>=0) && 
-                (orient2d(glm::value_ptr(v),glm::value_ptr(a),glm::value_ptr(p))>=0))
-                // (mightBeLeft(p-v,a-v) && mightBeLeft(b-v,p-v)) ||
-                // (mightBeLeft(p-v,b-v) && mightBeLeft(a-v,p-v))
-            ){
-                if(!visited[f]){
-                    visited[f]=1;
-                    q.push_back(f);
-                }
-            }
+    int t = prop;
+    for(int i=0;i<3;i++){
+        int f = triangles[t].t[i];
+        if(f==-1)continue;
+        Vec2 a = vertices[triangles[t].v[(i+1)%3]].pos;
+        Vec2 b = vertices[triangles[t].v[(i+2)%3]].pos;
+        // glm::value_ptr(v)
+        if(
+            (orient2d(glm::value_ptr(v),glm::value_ptr(p),glm::value_ptr(a))*orient2d(glm::value_ptr(v),glm::value_ptr(p),glm::value_ptr(b))<0) &&
+            (orient2d(glm::value_ptr(a),glm::value_ptr(b),glm::value_ptr(p))*orient2d(glm::value_ptr(a),glm::value_ptr(b),glm::value_ptr(v))<0)
+            // (mightBeLeft(p-v,a-v) && mightBeLeft(b-v,p-v)) ||
+            // (mightBeLeft(p-v,b-v) && mightBeLeft(a-v,p-v))
+        ){
+            return findContainerTriangleSqrtSearch(p,f);
         }
     }
-
-    delete[] visited;
 
     return -1;
 }
@@ -304,7 +288,7 @@ bool Triangulation::delaunayInsertion(Vec2 p){
 
     Vec2 initialPoint = (vertices[triangles[nextToMinOne].v[0]].pos+vertices[triangles[nextToMinOne].v[1]].pos+vertices[triangles[nextToMinOne].v[2]].pos)/3.0;
     int tri_index;
-    if(doLogSearch) tri_index = findContainerTriangleSqrtSearch(p,initialPoint,nextToMinOne,-1);
+    if(doLogSearch) tri_index = findContainerTriangleSqrtSearch(p,nextToMinOne);
     else tri_index = findContainerTriangleLinearSearch(p);
     
     Vec2 points[] = {vertices[triangles[tri_index].v[0]].pos,vertices[triangles[tri_index].v[1]].pos,vertices[triangles[tri_index].v[2]].pos};
@@ -1277,8 +1261,8 @@ void Triangulation::reAddVertex(Triangulation::RemovedVertex rmvx){
         legalize(rmvx.t[0],triangles[rmvx.t[0]].t[i]);
     }
 
-    // Vec2 initialPoint = Vec2(vertices[triangles[nextToMinOne].v[0]].pos+vertices[triangles[nextToMinOne].v[1]].pos+vertices[triangles[nextToMinOne].v[2]].pos)/3.0;
-    int f = findContainerTriangleLinearSearch(vertices[rmvx.v].pos); // we have to find the triangle where we'll insert put the point
+    int f = findContainerTriangleSqrtSearch(vertices[rmvx.v].pos,rmvx.t[0]); // we have to find the triangle where we'll insert put the point
+    // int f = findContainerTriangleLinearSearch(vertices[rmvx.v].pos);
     int f1 = rmvx.t[1]; // we reuse the indices
     int f2 = rmvx.t[2]; // we reuse the indices
 
