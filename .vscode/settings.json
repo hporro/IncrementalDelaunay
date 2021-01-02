@@ -65,6 +65,10 @@
         "cfenv": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "hash_set": "cpp",
+        "complex": "cpp",
+        "csignal": "cpp",
+        "future": "cpp"
     }
 }

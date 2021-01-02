@@ -3,6 +3,11 @@
 
 //#include <GL/gl3w.h>
 
+#define __H_BREAKPOINT__ __asm__("int $3")
+// #define __H_ASSERT__(condition) if(!(condition)) {__H_BREAKPOINT__; return false;}
+#define __H_ASSERT__(condition) if(!(condition)) { std::cout << __LINE__ << std::endl; triangles[t1] = pt1; triangles[t2] = pt2; return false;}
+#define __H_BREAK_ASSERT__(condition) if(!(condition)) {__H_BREAKPOINT__; assert(condition);}
+
 #include <vector>
 #include <set>
 #include <glm/glm.hpp>
@@ -63,6 +68,7 @@ public:
     bool isInside(int t, Vec2); //checks if a Vec2 is inside the triangle in the index t
     bool isInside(int t, int v);
     bool isInEdge(int t, Vec2); //checks if a Vec2 is in a edge of a triangle
+    bool legalize(int t);
     bool legalize(int t1, int t2);
     bool isConvexBicell(int t1, int t2); // Checks if a bicell is convex
 

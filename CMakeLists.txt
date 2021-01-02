@@ -99,3 +99,9 @@ add_executable(deleteVertexsmol examples/littleDeleteVertex.cpp)
 target_link_libraries(deleteVertexsmol PRIVATE delaunay_visual glfw gl3w DelaunayGUI ${CMAKE_DL_LIBS})
 target_include_directories(deleteVertexsmol PRIVATE src)
 target_include_directories(deleteVertexsmol PRIVATE extern)
+
+# Main app4: Boids simulation 
+add_executable(boids examples/boids.cpp)
+target_link_libraries(boids PRIVATE delaunay_visual glfw gl3w DelaunayGUI ${CMAKE_DL_LIBS})
+target_include_directories(boids PRIVATE src)
+target_include_directories(boids PRIVATE extern)

@@ -7,7 +7,7 @@
 #include "point_generator.h"
 #include "delaunay.h"
 #include "draw_triangulation.h"
-#include "simulation/shakerSimulation.h"
+#include "simulation/boidsSimulation.h"
 
 static void glfw_error_callback(int error, const char* description){
     std::cerr << "Glfw Error "<< error << ": " << description << std::endl;
@@ -93,43 +93,18 @@ int main(int argn, char** argv){
         return 1;
     }
 
-    int numP = 3;
+    int numP = 400;
     float maxVel = 10;
 
-    float boundSize = 10;
+    float boundSize = 1;
     Vec2 p10 = Vec2{-boundSize,-boundSize};
     Vec2 p11 = Vec2{boundSize,-boundSize };
     Vec2 p12 = Vec2{boundSize,boundSize  };
     Vec2 p13 = Vec2{-boundSize,boundSize };
 
-    // std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
-    // POINT_GENERATOR::print_points(points);
-    std::vector<Vec2> points = std::vector<Vec2>();
-// 7.62892 0.622708
-// -4.86197 -7.12018
-// 5.29245 6.30541
-    points.push_back(Vec2(7.62892, 0.622708));
-    points.push_back(Vec2(-4.86197, -7.12018));
-    points.push_back(Vec2(5.29245, 6.30541));
-    points.push_back(p10);
-    points.push_back(p11);
-    points.push_back(p12);
-    points.push_back(p13);
-    
+    std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
+
     Triangulation *t = new Triangulation(points,points.size(),true);
-
-    for(int i=0;i<200;i++){
-        t->movePoint(7,Vec2(boundSize-1,boundSize-1));
-        t->movePoint(7,-Vec2(boundSize-1,boundSize-1));
-    }
-    
-    // points.push_back(Vec2(0,0));
-    // points.push_back(Vec2(10,1));
-    // points.push_back(Vec2(2,-1));
-    // points.push_back(Vec2(3,0));
-    // points.push_back(Vec2(-2,2));
-    // points.push_back(Vec2(0.3,-2));
-
     TriangulationDrawer *td = new TriangulationDrawer(t);
 
     // Gui for the program
@@ -152,6 +127,8 @@ int main(int argn, char** argv){
     //     std::cout << v << " ";
     // }std::cout << std::endl;
 
+    BoidsSimulation* ts = new BoidsSimulation(t,maxVel);
+
     double currentTime = glfwGetTime(), lastTime = glfwGetTime();
     double time_passed = 0;
 
@@ -168,7 +145,13 @@ int main(int argn, char** argv){
         double delta = currentTime - lastTime;
         time_passed+=delta;
         if(dgui->state->runningsimulation){
+            ts->step(1.0/60.0);
             td->genBuffers();
+        }
+        if(dgui->state->has_to_change_vel){
+            delete ts;
+            ts = new BoidsSimulation(t,dgui->state->maxVel);
+            ts->initRandomVel();
         }
         lastTime = currentTime;
         currentTime = glfwGetTime();
@@ -190,9 +173,12 @@ int main(int argn, char** argv){
             }
             delete t;
             delete td;
+            delete ts;
             t = new Triangulation(points,points.size(),true);
             td = new TriangulationDrawer(t);
+            ts = new BoidsSimulation(t,maxVel);
             t->whichTriangle();
+            ts->initRandomVel();
             gstate->numP = t->vcount;
             gstate->numT = t->tcount;
         }

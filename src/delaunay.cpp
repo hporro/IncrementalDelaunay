@@ -13,11 +13,6 @@ static bool initialized = false;
 
 #include "utils.h"
 
-#define __H_BREAKPOINT__ __asm__("int $3")
-// #define __H_ASSERT__(condition) if(!(condition)) {__H_BREAKPOINT__; return false;}
-#define __H_ASSERT__(condition) if(!(condition)) { std::cout << __LINE__ << std::endl; triangles[t1] = pt1; triangles[t2] = pt2; return false;}
-#define __H_BREAK_ASSERT__(condition) if(!(condition)) {__H_BREAKPOINT__; assert(condition);}
-
 //VERTEX IMPL
 Vertex::Vertex(Vec2 v, int t) : pos(v), tri_index(t){}
 Vertex::Vertex(Vec2 v) : pos(v){}
@@ -140,10 +135,10 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP, bool logSearch 
     vertices = new Vertex[maxVertices]; // num of vertices
     triangles = new Triangle[maxTriangles]; // 2(n+6) - 2 - 3 = 2n+7 // num of faces
 
-    vertices[0] = Vertex(p0);
-    vertices[1] = Vertex(p1);
-    vertices[2] = Vertex(p2);
-    vertices[3] = Vertex(p3);
+    vertices[0] = Vertex(Vec2(-10000,-10000));
+    vertices[1] = Vertex(Vec2( 10000,-10000));
+    vertices[2] = Vertex(Vec2( 10000, 10000));
+    vertices[3] = Vertex(Vec2(-10000, 10000));
 
     triangles[0] = Triangle(0,1,2,-1,1,-1);
     triangles[1] = Triangle(0,2,3,-1,-1,0);
@@ -231,7 +226,7 @@ void Triangulation::addPointInside(Vec2 v, int tri_index){
     triangles[f].t[1] = f1;
     triangles[f].t[2] = f2;
 
-    vertices[p] = Vertex(v);
+    vertices[p] = Vertex(v,f);
 
     updateNextToMinOne(f);
     updateNextToMinOne(f1);
@@ -323,18 +318,17 @@ bool Triangulation::delaunayInsertion(Vec2 p){
             // insert a point in the i edge
             if(triangles[tri_index].t[i]==-1){
                 addPointInEdge(p,tri_index);
-                for(int j=0;j<3;j++){
-                    legalize(tri_index,triangles[tri_index].t[j]);
-                    legalize(tcount-1,triangles[tcount-1].t[j]);
-                }
+                legalize(tri_index);
+                legalize(tcount-1);
+                legalize(tcount-2);
             }
             else{
                 addPointInEdge(p,tri_index,triangles[tri_index].t[i]);
                 for(int j=0;j<3;j++){
-                    legalize(triangles[tri_index].t[i],triangles[triangles[tri_index].t[i]].t[j]);
-                    legalize(tri_index,triangles[tri_index].t[j]);
-                    legalize(tcount-1,triangles[tcount-1].t[j]);
-                    legalize(tcount-2,triangles[tcount-2].t[j]);
+                    legalize(triangles[tri_index].t[i]);
+                    legalize(tri_index);
+                    legalize(tcount-1);
+                    legalize(tcount-2);
                 }
             }
             return true;
@@ -345,11 +339,9 @@ bool Triangulation::delaunayInsertion(Vec2 p){
         this->incount++;
         addPointInside(p,tri_index);
         int a = tri_index,b=tcount-1,c=tcount-2;
-        for (int i = 0; i < 3; i++) {
-            legalize(a, triangles[a].t[i]);
-            legalize(b, triangles[b].t[i]);
-            legalize(c, triangles[c].t[i]);
-        }
+        legalize(a);
+        legalize(b);
+        legalize(c);
         return true;
     }
     return true;
@@ -370,6 +362,11 @@ std::pair<int,int> Triangulation::getVerticesSharedByTriangles(int t1, int t2){
         }
     }
     return std::make_pair(-1,-1);
+}
+
+bool Triangulation::legalize(int t){
+    for(int i=0;i<3;i++)legalize(t,triangles[t].t[i]);
+    return true;
 }
 
 bool Triangulation::legalize(int t1, int t2){
@@ -397,30 +394,33 @@ bool Triangulation::legalize(int t1, int t2){
     for(int i=0;i<3;i++){
         if((a[i]!=b[4]) && (a[i]!=b[5]) && (a[i]!=b[6])) b[7] = a[i];
     }
-    if(!isCCW(t1) && !isCCW(t2)){
-        std::cout << "ecase" << std::endl;
-        return 0;
-    }
-    for(int i=0;i<3;i++)if(isInside(t2,vertices[triangles[t1].v[i]].pos)){
-        std::cout << "fcase " << t1 << " " << t2  << std::endl;
-        return flipNoChecking(t2,t1);
-        std::cout << "End fcase" << std::endl;
-    }
-    for(int i=0;i<3;i++)if(isInside(t1,vertices[triangles[t2].v[i]].pos)){
-        std::cout << "fcase " << t1 << " " << t2  << std::endl;
-        return flipNoChecking(t1,t2);
-        std::cout << "End fcase" << std::endl;
-    }
-    if(!isCCW(t1) || !isCCW(t2)){
-        std::cout << "Not fcase yet " << t1 << " " << t2 << std::endl;
-        return 0;
-    }
+    // if(!isCCW(t1) && !isCCW(t2)){
+    //     std::cout << "ecase" << std::endl;
+    //     return 0;
+    // }
+    // for(int i=0;i<3;i++)if(isInside(t2,vertices[triangles[t1].v[i]].pos)){
+    //     std::cout << "fcase " << t1 << " " << t2  << std::endl;
+    //     return flipNoChecking(t2,t1);
+    //     std::cout << "End fcase" << std::endl;
+    // }
+    // for(int i=0;i<3;i++)if(isInside(t1,vertices[triangles[t2].v[i]].pos)){
+    //     std::cout << "fcase " << t1 << " " << t2  << std::endl;
+    //     return flipNoChecking(t1,t2);
+    //     std::cout << "End fcase" << std::endl;
+    // }
+    // if(!isCCW(t1) || !isCCW(t2)){
+    //     std::cout << "Not fcase yet " << t1 << " " << t2 << std::endl;
+    //     return 0;
+    // }
     
-    if(inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)>0 ||
-    inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos)>0 
+    if((inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)>0 ||
+    inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos)>0) &&
+    isConvexBicell(t1,t2)
     ) {
         // std::cout << "start flip " << t1 << " " << t2 << std::endl << std::flush;
-        return flip(t1,t2);
+        bool p = flip(t1,t2);
+        legalize(t1);
+        legalize(t2);
         // std::cout << "end flip" << std::endl << std::flush;
     }
     return 1;
@@ -522,6 +522,8 @@ void Triangulation::addPointInEdge(Vec2 v, int t){
     triangles[t1] = Triangle(p0,p1,p,t,f1,f2);
     triangles[t].v[(x+2)%3] = p;
     triangles[t].t[(x+1)%3] = t1;
+
+    vertices[p].tri_index = t;
 
     if(f2!=-1){
         triangles[f2].t[0] = (triangles[f2].t[0] == t ? t1 : triangles[f2].t[0]);
@@ -673,40 +675,10 @@ bool Triangulation::flip(int t1, int t2){
     triangles[t2].v[1] = p10;
     triangles[t2].v[2] = p20;
 
-    if(!validTriangle(t1) || !validTriangle(t2)){
-        if(!validTriangle(t1) && !validTriangle(t2)){
-            triangles[t1] = pt1;
-            triangles[t2] = pt2;
-            for(int i=0;i<3;i++)if(triangles[t1].t[i]==t2){
-                int aux = triangles[t1].t[(i+1)%3];
-                triangles[t1].t[(i+1)%3] = triangles[t1].t[(i+2)%3];
-                triangles[t1].t[(i+2)%3] = aux;
-            }
-            for(int i=0;i<3;i++)if(triangles[t2].t[i]==t1){
-                int aux = triangles[t2].t[(i+1)%3];
-                triangles[t2].t[(i+1)%3] = triangles[t2].t[(i+2)%3];
-                triangles[t2].t[(i+2)%3] = aux;
-            }
 #if ASSERT_PROBLEMS
     __H_ASSERT__(validTriangle(t1)&&validTriangle(t2));
     __H_ASSERT__(integrity(t1)&&integrity(t2));
     __H_ASSERT__(isCCW(t1)&&isCCW(t2));
-    __H_ASSERT__(frontTest(t1)&&frontTest(t2));
-#endif
-            return flip(t1,t2);
-        }
-        else{
-            triangles[t1] = pt1;
-            triangles[t2] = pt2;
-            return true;
-        }
-    }
-
-#if ASSERT_PROBLEMS
-    __H_ASSERT__(sanity(t1)&&sanity(t2));
-    __H_ASSERT__(validTriangle(t1)&&validTriangle(t2));
-    __H_ASSERT__(integrity(t1)&&integrity(t2));
-    // __H_ASSERT__(isCCW(t1)&&isCCW(t2));
     __H_ASSERT__(frontTest(t1)&&frontTest(t2));
 #endif
 
@@ -719,6 +691,7 @@ bool Triangulation::flip(int t1, int t2){
         if(triangles[f21].t[i]==t2)triangles[f21].t[i]=t1;
     }
 
+    __H_ASSERT__(sanity(t1)&&sanity(t2));
     __H_ASSERT__(validTriangle(f11));
     __H_ASSERT__(validTriangle(f21));
 
@@ -730,7 +703,7 @@ bool Triangulation::flip(int t1, int t2){
     vertices[p10].tri_index=t2;
     vertices[p20].tri_index=t2;
 
-    assert(allSanity());
+//    assert(allSanity());
 
     updateNextToMinOne(t1);
     updateNextToMinOne(t2);
@@ -802,36 +775,6 @@ bool Triangulation::flipNoChecking(int t1, int t2){
 
     __H_ASSERT__(f20==t1 && f10==t2);
 
-    if(!validTriangle(t1) || !validTriangle(t2)){
-        if(!validTriangle(t1) && !validTriangle(t2)){
-            triangles[t1] = pt1;
-            triangles[t2] = pt2;
-            for(int i=0;i<3;i++)if(triangles[t1].t[i]==t2){
-                int aux = triangles[t1].t[(i+1)%3];
-                triangles[t1].t[(i+1)%3] = triangles[t1].t[(i+2)%3];
-                triangles[t1].t[(i+2)%3] = aux;
-            }
-            for(int i=0;i<3;i++)if(triangles[t2].t[i]==t1){
-                int aux = triangles[t2].t[(i+1)%3];
-                triangles[t2].t[(i+1)%3] = triangles[t2].t[(i+2)%3];
-                triangles[t2].t[(i+2)%3] = aux;
-            }
-#if ASSERT_PROBLEMS
-    __H_ASSERT__(validTriangle(t1)&&validTriangle(t2));
-    __H_ASSERT__(integrity(t1)&&integrity(t2));
-    __H_ASSERT__(isCCW(t1)&&isCCW(t2));
-    __H_ASSERT__(frontTest(t1)&&frontTest(t2));
-#endif
-            // flip(t1,t2);
-            return true;
-        }
-        else{
-            triangles[t1] = pt1;
-            triangles[t2] = pt2;
-            return true;
-        }
-    }
-
     triangles[t1].t[0] = t2;
     triangles[t1].t[1] = f12;
     triangles[t1].t[2] = f21;
@@ -884,7 +827,7 @@ bool Triangulation::flipNoChecking(int t1, int t2){
     vertices[p10].tri_index=t2;
     vertices[p20].tri_index=t2;
 
-    assert(allSanity());
+//    assert(allSanity());
 
     updateNextToMinOne(t1);
     updateNextToMinOne(t2);
@@ -1160,40 +1103,39 @@ float Triangulation::closestNeighbourDistance(int index){
 void Triangulation::movePoint(int index, Vec2 delta){
     point_being_moved = index;
     std::set<int> nt = getNeighbourTriangles(index);
-    if(closestNeighbourDistance(index)<2*radius){
-        // velocity[index]*=-1;
-        //vertices[index].pos+=delta*-1;
-        // std::cout << "BOUNCE " << std::endl;
-    }
+    Vec2 prevPos = vertices[index].pos;
+
     vertices[index].pos+=delta;
-    for(int t: nt){
-        for(int i=0;i<3;i++){
-            if(!legalize(t,triangles[t].t[i])){
-                // __H_BREAKPOINT__;
-                std::cout << "READD VERTEX" << std::endl;
-                vertices[index].pos-=delta;
-                auto rmvx = removeVertex(index);
-                vertices[index].pos+=delta;
-                reAddVertex(rmvx);
-                return;
-            }
+    
+    bool outside = false;
+
+    for(auto t: nt) {
+        if(!isCCW(t)){
+            outside = true;
+            break;
         }
+    }
+
+    if(!outside){
+        for(auto t: nt) {
+            legalize(t);
+        }
+        return;
+    }
+
+    vertices[index].pos=prevPos;
+    auto rmvx = removeVertex(index);
+    vertices[index].pos+=delta;
+    reAddVertex(rmvx);
+    std::set<int> ps = getNeighbourTriangles(index);
+    for(auto p:ps){
+        legalize(p);
     }
 }
 
 // We assume that both bicells are ccw oriented
 bool Triangulation::isConvexBicell(int t1, int t2){
-    
-    if(!isCCW(t1)){
-        __H_BREAKPOINT__;
-        std::swap(triangles[t1].t[0],triangles[t1].t[1]);
-        std::swap(triangles[t1].v[0],triangles[t1].v[1]);
-    }
-    if(!isCCW(t2)){
-        __H_BREAKPOINT__;
-        std::swap(triangles[t2].t[0],triangles[t2].t[1]);
-        std::swap(triangles[t2].v[0],triangles[t2].v[1]);
-    }
+    __H_BREAK_ASSERT__(isCCW(t1)&&isCCW(t2));
     assert(areConnected(t1,t2));
 
     int i,j; // find which are the different indices
@@ -1247,6 +1189,25 @@ Triangulation::RemovedVertex Triangulation::removeVertex(int v){
     std::set<int> nt = getNeighbourTriangles(v);
     std::vector<int> ntv = std::vector<int>(nt.begin(),nt.end());
     
+    for(int i=0;i<nt.size();i++){
+        if(!isCCW(ntv[i])){
+            for(int j=0;j<3;j++){
+                if(i==j)continue;
+                int t1 = ntv[i];
+                int t2 = triangles[t1].t[j];
+                if(areConnected(t1,t2)){
+                    for(int k=0;k<3;k++){
+                        if(isInside(t2,triangles[t1].v[k])){
+                            flip(t2,t1);
+                            nt = getNeighbourTriangles(v);
+                            ntv = std::vector<int>(nt.begin(),nt.end());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     while(nt.size()>3){
         int n = ntv.size();
         bool found = false;
@@ -1333,7 +1294,11 @@ void Triangulation::reAddVertex(Triangulation::RemovedVertex rmvx){
     int t2 = triangles[f].t[2];
 
     triangles[f1] = Triangle(p,p2,p0,t1,f2,f);
+    vertices[p2].tri_index = f1;
+    vertices[p0].tri_index = f1;
     triangles[f2] = Triangle(p,p0,p1,t2,f,f1);
+    vertices[p0].tri_index = f2;
+    vertices[p1].tri_index = f2;
     
     if(t1!=-1){
         if(triangles[t1].t[0]==f)
