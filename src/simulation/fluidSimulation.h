@@ -51,14 +51,14 @@ public:
         g = 0.8;
         // g = 0.0;
 
-        h = 20;
-        p0 = 6;
-        k = 0.005;
+        h = 35;
+        p0 = 3;
+        k = 0.01;
         P = new REAL[numP];
         p = new REAL[numP];
 
         p_near = new REAL[numP];
-        k_near = 0.4;
+        k_near = 0.1;
         P_near = new REAL[numP];
 
         dx = new Vec2[numP];

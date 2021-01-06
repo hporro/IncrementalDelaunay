@@ -103,7 +103,7 @@ int main(int argn, char** argv){
     Vec2 p13 = Vec2{-boundSize,boundSize};
 
     std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
-    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_grid(std::sqrt(numP),std::sqrt(numP),p10+Vec2{10,40},Vec2{p11[0]/8+10,p11[1]+40},Vec2{p12[0]/8+10,p12[1]/4+40},Vec2{p13[0]+10,p13[1]/4+40});
+    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_grid(std::sqrt(numP),std::sqrt(numP),p10+Vec2{70,40},Vec2{p11[0]/8+70,p11[1]+40},Vec2{p12[0]/8+70,p12[1]/4+40},Vec2{p13[0]+70,p13[1]/4+40});
 
     for(int i=0;i<100;i++){
         float alpha = i/100.0;
@@ -157,6 +157,8 @@ int main(int argn, char** argv){
     // }std::cout << std::endl;
 
     FluidSimulation* ts = new FluidSimulation(t,maxVel);
+    ts->g = 0.0;
+    ts->h = 35;
     for(int i=ts->numP-1;i>=ts->numP-600;i--){
         ts->state_code[i]=0;
     }
@@ -183,6 +185,8 @@ int main(int argn, char** argv){
         if(dgui->state->has_to_change_vel){
             delete ts;
             ts = new FluidSimulation(t,dgui->state->maxVel);
+            ts->g = 0.0;
+            ts->h = 35;
             ts->initRandomVel();
         }
         lastTime = currentTime;
@@ -209,6 +213,8 @@ int main(int argn, char** argv){
             t = new Triangulation(points,points.size(),true);
             td = new TriangulationDrawer(t);
             ts = new FluidSimulation(t,maxVel);
+            ts->g = 0.0;
+            ts->h = 35;
             t->whichTriangle();
             ts->initRandomVel();
             gstate->numP = t->vcount;

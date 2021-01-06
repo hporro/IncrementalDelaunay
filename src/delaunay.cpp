@@ -364,34 +364,15 @@ bool Triangulation::legalize(int t1, int t2){
     for(int i=0;i<3;i++){
         if((a[i]!=b[4]) && (a[i]!=b[5]) && (a[i]!=b[6])) b[7] = a[i];
     }
-    // if(!isCCW(t1) && !isCCW(t2)){
-    //     std::cout << "ecase" << std::endl;
-    //     return 0;
-    // }
-    // for(int i=0;i<3;i++)if(isInside(t2,vertices[triangles[t1].v[i]].pos)){
-    //     std::cout << "fcase " << t1 << " " << t2  << std::endl;
-    //     return flipNoChecking(t2,t1);
-    //     std::cout << "End fcase" << std::endl;
-    // }
-    // for(int i=0;i<3;i++)if(isInside(t1,vertices[triangles[t2].v[i]].pos)){
-    //     std::cout << "fcase " << t1 << " " << t2  << std::endl;
-    //     return flipNoChecking(t1,t2);
-    //     std::cout << "End fcase" << std::endl;
-    // }
-    // if(!isCCW(t1) || !isCCW(t2)){
-    //     std::cout << "Not fcase yet " << t1 << " " << t2 << std::endl;
-    //     return 0;
-    // }
     
     if((inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)>0 ||
     inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos)>0) &&
     isConvexBicell(t1,t2)
     ) {
-        // std::cout << "start flip " << t1 << " " << t2 << std::endl << std::flush;
         bool p = flip(t1,t2);
         legalize(t1);
         legalize(t2);
-        // std::cout << "end flip" << std::endl << std::flush;
+        return p;
     }
     return 1;
 }
@@ -1018,62 +999,91 @@ void Triangulation::reAddVertex(Triangulation::RemovedVertex rmvx){
     __H_BREAK_ASSERT__(sanity(rmvx.t[1]));
     __H_BREAK_ASSERT__(sanity(rmvx.t[2]));
 
-    int v = rmvx.v;
-    int vs[3];
-    int ts[3];
-    for(int i=0;i<3;i++){
-        if(triangles[rmvx.t[0]].v[i]==v){ // once we find the position of v
-            int next_tri = triangles[rmvx.t[0]].t[(i+1)%3];
-            ts[0] = triangles[rmvx.t[0]].t[i]; // we take the triangle outside the neighbourhood
-            vs[0] = triangles[rmvx.t[0]].v[(i+1)%3]; // we take the vertex around v
+    int p = rmvx.v;
 
-            for(int j=0;j<3;j++)if(triangles[next_tri].v[j]==v){ // we continue in the next triangle on the neighbourhood of v in ccw
-                ts[1] = triangles[next_tri].t[j];
-                vs[1] = triangles[next_tri].v[(j+1)%3];
-                next_tri = triangles[next_tri].t[(j+1)%3];
-                break;
-            }
-            for(int j=0;j<3;j++)if(triangles[next_tri].v[j]==v){ // we continue in the next triangle on the neighbourhood of v in ccw
-                ts[2] = triangles[next_tri].t[j];
-                vs[2] = triangles[next_tri].v[(j+1)%3];
-                next_tri = triangles[next_tri].t[(j+1)%3];
-                break;
-            }
-            break;
-        }
+    int t1 = rmvx.t[0];
+    int t2 = rmvx.t[1];
+    int t3 = rmvx.t[2];
+
+    int i;
+    if      (triangles[t1].v[0] == p) { i=0; }
+    else if (triangles[t1].v[1] == p) { i=1; }
+    else { i=2; }
+    int j;
+    if      (triangles[t2].v[0] == p) { j=0; }
+    else if (triangles[t2].v[1] == p) { j=1; }
+    else { j=2; }
+    int k;
+    if      (triangles[t3].v[0] == p) { k=0; }
+    else if (triangles[t3].v[1] == p) { k=1; }
+    else { k=2; }
+    
+    int f1 = triangles[t1].t[i];
+    int f2 = triangles[t2].t[j];
+    int f3 = triangles[t3].t[k];
+
+    int p11 = triangles[t1].v[(i+1)%3];
+    int p12 = triangles[t1].v[(i+2)%3];
+
+    int p21 = triangles[t2].v[(j+1)%3];
+    int p22 = triangles[t2].v[(j+2)%3];
+
+    int p31 = triangles[t3].v[(k+1)%3];
+    int p32 = triangles[t3].v[(k+2)%3];
+
+    if (p31==p22) {
+        triangles[t1].v[2] = p31;
+
+        triangles[t1].t[0] = f2;
+        triangles[t1].t[1] = f3;
+
+        vertices[p31].tri_index = t1;
     }
+    else if (p32==p21) {
+        triangles[t1].v[2] = p32;
 
-    for(int i=1;i<3;i++)for(int j=0;j<3;j++)for(int k=0;k<3;k++){
-        if(triangles[triangles[rmvx.t[i]].t[j]].t[k]==rmvx.t[i])triangles[triangles[rmvx.t[i]].t[j]].t[k]=rmvx.t[0];
+        triangles[t1].t[0] = f3;
+        triangles[t1].t[1] = f2;
+
+        vertices[p32].tri_index = t1;
     }
+    else {__H_BREAK_ASSERT__(false);}
 
-    triangles[rmvx.t[0]] = Triangle(vs[0],vs[1],vs[2],ts[1],ts[2],ts[0]);
+    triangles[t1].v[0] = p11;
+    triangles[t1].v[1] = p12;
 
-    __H_BREAK_ASSERT__(isCCW(rmvx.t[0]));
-    __H_BREAK_ASSERT__(validTriangle(rmvx.t[0]) && sanity(rmvx.t[0]));
+    triangles[t1].t[2] = f1;
+
+    vertices[p11].tri_index = t1;
+    vertices[p12].tri_index = t1;
+
+    for(int l=0;l<3;l++) {
+        if (triangles[f2].t[l] == t2) { triangles[f2].t[l] = t1; }
+        if (triangles[f2].t[l] == t3) { triangles[f2].t[l] = t1; }
+    }
+    for(int l=0;l<3;l++) {
+        if (triangles[f3].t[l] == t2) { triangles[f3].t[l] = t1; }
+        if (triangles[f3].t[l] == t3) { triangles[f3].t[l] = t1; }
+    }
 
     triangles[rmvx.t[1]] = Triangle(-1,-1,-1,-1,-1,-1);
     triangles[rmvx.t[2]] = Triangle(-1,-1,-1,-1,-1,-1);
 
-    for(int i=0;i<3;i++){
-        legalize(rmvx.t[0],triangles[rmvx.t[0]].t[i]);
-    }
+    legalize(rmvx.t[0]);
 
     int f = findContainerTriangleSqrtSearch(vertices[rmvx.v].pos,rmvx.t[0]); // we have to find the triangle where we'll insert put the point
     // int f = findContainerTriangleLinearSearch(vertices[rmvx.v].pos);
-    int f1 = rmvx.t[1]; // we reuse the indices
-    int f2 = rmvx.t[2]; // we reuse the indices
+    f1 = rmvx.t[1]; // we reuse the indices
+    f2 = rmvx.t[2]; // we reuse the indices
 
     __H_BREAK_ASSERT__(f!=f1 && f!=f2);
     __H_BREAK_ASSERT__(sanity(f));
 
-    int p = rmvx.v;
-
     int p0 = triangles[f].v[0];
     int p1 = triangles[f].v[1];
     int p2 = triangles[f].v[2];
-    int t1 = triangles[f].t[1];
-    int t2 = triangles[f].t[2];
+    t1 = triangles[f].t[1];
+    t2 = triangles[f].t[2];
 
     triangles[f1] = Triangle(p,p2,p0,t1,f2,f);
     vertices[p2].tri_index = f1;

@@ -88,6 +88,12 @@ target_link_libraries(simulation PRIVATE delaunay_visual glfw gl3w DelaunayGUI $
 target_include_directories(simulation PRIVATE src)
 target_include_directories(simulation PRIVATE extern)
 
+# Main app2: All together, in a kinetic setting
+add_executable(simulationnog examples/simulationnog.cpp)
+target_link_libraries(simulationnog PRIVATE delaunay_visual glfw gl3w DelaunayGUI ${CMAKE_DL_LIBS})
+target_include_directories(simulationnog PRIVATE src)
+target_include_directories(simulationnog PRIVATE extern)
+
 # Main app3: Playground to test the deleteVertex and ReaddVertex methods 
 add_executable(deleteVertex examples/deleteVertex.cpp)
 target_link_libraries(deleteVertex PRIVATE delaunay_visual glfw gl3w DelaunayGUI ${CMAKE_DL_LIBS})
