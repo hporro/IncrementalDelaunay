@@ -116,6 +116,7 @@ public:
     RemovedVertex removeVertex(int v); // removes a vertex from a triangulation, and returns it
     void reAddVertex(RemovedVertex rmvx); // add a vertex when it was previously deleted
     std::set<int> getFRNN(int v, float r);
+    std::set<std::pair<int,double>> getFRNN_cache(int v, float r);
 };
 
 double crossa(Vec2 a, Vec2 b);

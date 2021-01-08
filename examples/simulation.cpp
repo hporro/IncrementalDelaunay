@@ -98,12 +98,12 @@ int main(int argn, char** argv){
 
     float boundSize = 400;
     Vec2 p10 = Vec2{-boundSize,-boundSize};
-    Vec2 p11 = Vec2{boundSize,-boundSize};
-    Vec2 p12 = Vec2{boundSize,boundSize};
-    Vec2 p13 = Vec2{-boundSize,boundSize};
+    Vec2 p11 = Vec2{boundSize/2,-boundSize};
+    Vec2 p12 = Vec2{boundSize/2,boundSize/4};
+    Vec2 p13 = Vec2{-boundSize,boundSize/4};
 
     std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
-    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_grid(std::sqrt(numP),std::sqrt(numP),p10+Vec2{10,40},Vec2{p11[0]/8+10,p11[1]+40},Vec2{p12[0]/8+10,p12[1]/4+40},Vec2{p13[0]+10,p13[1]/4+40});
+    std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_grid(std::sqrt(numP),std::sqrt(numP),p10+Vec2{20,40},Vec2{p11[0]/8+20,p11[1]+40},Vec2{p12[0]/8+20,p12[1]/4+40},Vec2{p13[0]+20,p13[1]/4+40});
 
     for(int i=0;i<100;i++){
         float alpha = i/100.0;
@@ -123,11 +123,11 @@ int main(int argn, char** argv){
     }
     for(int i=0;i<100;i++){
         float alpha = i/100.0;
-        points2.push_back((p11+Vec2{5,0})*alpha+(p12+Vec2{-2,0})*(1-alpha));
+        points2.push_back((p11+Vec2{0,0})*alpha+(p12+Vec2{-2,0})*(1-alpha));
     }
     for(int i=0;i<100;i++){
         float alpha = i/100.0;
-        points2.push_back((p11+Vec2{7,0})*alpha+(p12+Vec2{0,0})*(1-alpha));
+        points2.push_back((p11+Vec2{0,0})*alpha+(p12+Vec2{0,0})*(1-alpha));
     }
     // for(int i=0;i<100;i++){
     //     float alpha = i/100.0;
@@ -177,7 +177,7 @@ int main(int argn, char** argv){
         double delta = currentTime - lastTime;
         time_passed+=delta;
         if(dgui->state->runningsimulation){
-            ts->step(1.0/60.0);
+            ts->step_fast(1.0/60.0);
             td->genBuffers();
         }
         if(dgui->state->has_to_change_vel){

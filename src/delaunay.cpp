@@ -1154,6 +1154,33 @@ std::set<int> Triangulation::getFRNN(int index, float r){
     return neighbours;
 }
 
+std::set<std::pair<int,double>> Triangulation::getFRNN_cache(int index, float r){
+    int tri_index = vertices[index].tri_index;
+    std::set<std::pair<int,double>> neighbours = std::set<std::pair<int,double>>();
+    std::set<int> trianglesChecked = std::set<int>();
+    std::vector<int> checkingTriangles = std::vector<int>();
+    checkingTriangles.push_back(tri_index);
+    while(!checkingTriangles.empty()){
+        int curr_triangle = checkingTriangles[checkingTriangles.size()-1];
+        checkingTriangles.pop_back();
+        bool isInside = false;
+        for(int i=0;i<3;i++){
+            if(triangles[curr_triangle].v[i]==index){continue;}
+            double d;
+            if((d = dist2(vertices[triangles[curr_triangle].v[i]].pos,vertices[index].pos))<=r){
+                neighbours.insert(std::make_pair(triangles[curr_triangle].v[i],d));
+                isInside=true;
+            }
+        }
+        for(int i=0;i<3;i++){
+            if(trianglesChecked.find(triangles[curr_triangle].t[i])==trianglesChecked.end())
+                if(triangles[curr_triangle].t[i]!=-1 && isInside)checkingTriangles.push_back(triangles[curr_triangle].t[i]);
+        }
+        trianglesChecked.insert(curr_triangle);
+    }
+    return neighbours;
+}
+
 bool Triangulation::allSanity(){
     bool res = true;
     for(int i=0;i<tcount;i++)if(!sanity(i)){std::cout << i << std::endl;res = false;}
