@@ -26,6 +26,7 @@ public:
             if(t->vertices[i].pos[1] >= (t->p2[1]-velocity[i][1]) || t->vertices[i].pos[1] <= (t->p0[1]-velocity[i][1])) velocity[i][1]*=-1;
             Vec2 d = velocity[i]*dt;
             t->movePoint(i,d);
+            t->getFRNN_distance(i,5); // This doesnt take too much time
         }
     }
     void initRandomVel(){

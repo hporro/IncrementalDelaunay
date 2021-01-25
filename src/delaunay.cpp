@@ -134,6 +134,7 @@ Triangulation::Triangulation(std::vector<Vec2> points, int numP, bool logSearch 
     maxTriangles = numP*2+7;
     vertices = new Vertex[maxVertices]; // num of vertices
     triangles = new Triangle[maxTriangles]; // 2(n+6) - 2 - 3 = 2n+7 // num of faces
+    lengths = new double[maxTriangles*3]; // One for every triangle in an edge
 
     vertices[0] = Vertex(Vec2(-10000,-10000));
     vertices[1] = Vertex(Vec2( 10000,-10000));
@@ -365,9 +366,9 @@ bool Triangulation::legalize(int t1, int t2){
         if((a[i]!=b[4]) && (a[i]!=b[5]) && (a[i]!=b[6])) b[7] = a[i];
     }
     
-    if((inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)>0 ||
-    inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos)>0) &&
-    isConvexBicell(t1,t2)
+    if(isConvexBicell(t1,t2) && 
+       (inCircle(vertices[b[0]].pos,vertices[b[1]].pos,vertices[b[2]].pos,vertices[b[3]].pos)>0 ||
+        inCircle(vertices[b[4]].pos,vertices[b[5]].pos,vertices[b[6]].pos,vertices[b[7]].pos)>0)
     ) {
         bool p = flip(t1,t2);
         legalize(t1);
@@ -601,6 +602,7 @@ bool Triangulation::flip(int t1, int t2){
 Triangulation::~Triangulation(){
     delete[] triangles;
     delete[] vertices;
+    delete[] lengths;
 }
 
 bool Triangulation::sanity(int t){
@@ -736,6 +738,12 @@ void Triangulation::remem(){
         std::copy(triangles,triangles+tcount,newTriangles);
         delete[] triangles;
         triangles = newTriangles;
+
+        double* newLengths = new double[maxTriangles*2];
+        std::copy(lengths,lengths+tcount,newLengths);
+        delete[] lengths;
+        lengths = newLengths;        
+
         maxTriangles *= 2;
     }
 
@@ -890,10 +898,6 @@ void Triangulation::movePoint(int index, Vec2 delta){
     auto rmvx = removeVertex(index);
     vertices[index].pos+=delta;
     reAddVertex(rmvx);
-    std::set<int> ps = getNeighbourTriangles(index);
-    for(auto p:ps){
-        legalize(p);
-    }
 }
 
 // We assume that both bicells are ccw oriented
@@ -1154,7 +1158,44 @@ std::set<int> Triangulation::getFRNN(int index, float r){
     return neighbours;
 }
 
-std::set<std::pair<int,double>> Triangulation::getFRNN_cache(int index, float r){
+std::set<std::pair<int,double>> Triangulation::getFRNN_distance_exp(int index, float r){
+    
+    auto neighbors = std::set<std::pair<int,double>>();
+    auto checkedPoints = std::set<int>();
+    auto pointsToCheck = std::vector<int>();
+    pointsToCheck.push_back(index);
+    while(!pointsToCheck.empty()){
+        int curr_point = pointsToCheck[pointsToCheck.size()-1];
+        pointsToCheck.pop_back();
+
+        if(checkedPoints.find(curr_point)!=checkedPoints.end()) continue;
+        if(curr_point!=index){
+            double dist = dist2(vertices[curr_point].pos,vertices[index].pos); // O(I) distance calculations
+            if(dist<r){
+                neighbors.insert(std::make_pair(curr_point,dist));
+            }
+        }
+
+        checkedPoints.insert(curr_point);
+
+        auto ns = getNeighbourTriangles(curr_point);
+        for(int t: ns){ // every triangle that has curr_point
+            int i=-1;
+            for(int j=0;j<3;j++){
+                if(triangles[t].v[j]==curr_point)i=j;
+            }
+
+            if(lengths[t*3+i]>r)continue; // if the edge is bigger than r, there is no way the point is inside the frnn of index
+            int j = triangles[t].v[(i+1)%3];
+            if(checkedPoints.find(j)==checkedPoints.end()){
+                pointsToCheck.push_back(j);
+            }
+        }
+    } 
+    return neighbors;
+}
+
+std::set<std::pair<int,double>> Triangulation::getFRNN_distance(int index, float r){
     int tri_index = vertices[index].tri_index;
     std::set<std::pair<int,double>> neighbours = std::set<std::pair<int,double>>();
     std::set<int> trianglesChecked = std::set<int>();
@@ -1185,4 +1226,37 @@ bool Triangulation::allSanity(){
     bool res = true;
     for(int i=0;i<tcount;i++)if(!sanity(i)){std::cout << i << std::endl;res = false;}
     return res;
+}
+
+std::vector<std::pair<int,double>> Triangulation::get_all_FRNN(float r){
+    auto all_neighbours = std::vector<std::pair<int,double>>();
+    for(int index=0;index<vcount;index++){
+        int tri_index = vertices[index].tri_index;
+        auto neighbours = std::unordered_set<int>();
+        std::unordered_set<int> trianglesChecked = std::unordered_set<int>();
+        std::vector<int> checkingTriangles = std::vector<int>();
+        checkingTriangles.push_back(tri_index);
+        while(!checkingTriangles.empty()){
+            int curr_triangle = checkingTriangles[checkingTriangles.size()-1];
+            checkingTriangles.pop_back();
+            bool isInside = false;
+            for(int i=0;i<3;i++){
+                if(triangles[curr_triangle].v[i]==index){continue;}
+                int j = triangles[curr_triangle].v[i];
+                if(neighbours.find(j)!=neighbours.end()){continue;}
+                double d = dist2(vertices[j].pos,vertices[index].pos);
+                if(d<=r){
+                    all_neighbours.push_back(std::make_pair(j,d));
+                    neighbours.insert(j);
+                    isInside=true;
+                }
+            }
+            for(int i=0;i<3;i++){
+                if(trianglesChecked.find(triangles[curr_triangle].t[i])==trianglesChecked.end())
+                    if(triangles[curr_triangle].t[i]!=-1 && isInside)checkingTriangles.push_back(triangles[curr_triangle].t[i]);
+            }
+            trianglesChecked.insert(curr_triangle);
+        }
+    }
+    return all_neighbours;
 }

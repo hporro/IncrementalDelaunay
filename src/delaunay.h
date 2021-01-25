@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <set>
+#include <unordered_set>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -45,6 +46,7 @@ public:
 
     Vertex *vertices;
     Triangle *triangles;
+    double *lengths;
 
     bool delaunayInsertion(Vec2 point);
     void addPointInside(Vec2 point,int);
@@ -116,7 +118,9 @@ public:
     RemovedVertex removeVertex(int v); // removes a vertex from a triangulation, and returns it
     void reAddVertex(RemovedVertex rmvx); // add a vertex when it was previously deleted
     std::set<int> getFRNN(int v, float r);
-    std::set<std::pair<int,double>> getFRNN_cache(int v, float r);
+    std::set<std::pair<int,double>> getFRNN_distance(int v, float r);
+    std::set<std::pair<int,double>> getFRNN_distance_exp(int v, float r);
+    std::vector<std::pair<int,double>> get_all_FRNN(float r);
 };
 
 double crossa(Vec2 a, Vec2 b);
