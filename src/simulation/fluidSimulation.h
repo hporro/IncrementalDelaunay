@@ -228,6 +228,55 @@ public:
         // }
     }
 
+
+    //uses the get_all_FRNN function
+    void step_fast_all_exp(REAL dt){
+        for(int i=0;i<numP;i++){
+            p[i] = 0;
+            p_near[i] = 0;
+        }
+
+        for(int i=0;i<t->tcount;i++){
+            for(int j=0;j<3;j++){
+                t->lengths[i*3+j] = dist2(t->vertices[t->triangles[i].v[j]].pos,t->vertices[t->triangles[i].v[(j+1)%3]].pos);
+            }
+        }
+
+        auto all_neighbours = t->get_all_FRNN(h);
+        for(int i=0;i<numP;i++) {
+            auto neighbours = all_neighbours[i];
+            for (auto ns: neighbours) {
+                int j = ns.first;
+                double dist = ns.second;
+                REAL q = dist / h;
+                if (q < 1 && i!=j) {
+                    p[i] += pow2(1 - q);
+                    p_near[i] += pow3(1 - q);
+                }
+            }
+            P[i] = k * (p[i] - p0);
+            P_near[i] = k_near * p_near[i];
+            dx[i] = Vec2{0, 0};
+            for (auto ns: neighbours) {
+                int j = ns.first;
+                double dist = ns.second;
+                REAL q = dist / h;
+                if (q < 1 && i!=j) {
+                    Vec2 rij = (t->vertices[j].pos - t->vertices[i].pos) / dist;
+                    Vec2 D = rij * (REAL)(P[i] * (1 - q) + P_near[i] * pow2(1 - q));
+                    D /= 2.0;
+                    dx[i] -= D;
+                }
+            }
+        }
+        for(int i=4;i<numP;i++)if(state_code[i]){
+            t->movePoint(i,dx[i] + velocity[i]*dt);
+            velocity[i] = dx[i];
+            velocity[i] -= Vec2{0,g};
+            velocity[i] /= dt;
+        }
+    }
+
     void initRandomVel(){
         for(int i=0;i<4;i++){
             velocity[i] = Vec2{0,0};

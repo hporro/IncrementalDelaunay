@@ -120,7 +120,7 @@ public:
     std::set<int> getFRNN(int v, float r);
     std::set<std::pair<int,double>> getFRNN_distance(int v, float r);
     std::set<std::pair<int,double>> getFRNN_distance_exp(int v, float r);
-    std::vector<std::pair<int,double>> get_all_FRNN(float r);
+    std::vector<std::vector<std::pair<int,double>>> get_all_FRNN(float r);
 };
 
 double crossa(Vec2 a, Vec2 b);

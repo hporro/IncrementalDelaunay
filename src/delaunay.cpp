@@ -903,7 +903,7 @@ void Triangulation::movePoint(int index, Vec2 delta){
 // We assume that both bicells are ccw oriented
 bool Triangulation::isConvexBicell(int t1, int t2){
     __H_BREAK_ASSERT__(isCCW(t1)&&isCCW(t2));
-    assert(areConnected(t1,t2));
+    __H_BREAK_ASSERT__(areConnected(t1,t2));
 
     int i,j; // find which are the different indices
     for(i=0;i<3;i++){
@@ -955,25 +955,6 @@ bool Triangulation::isConvexBicell(int t1, int t2){
 Triangulation::RemovedVertex Triangulation::removeVertex(int v){
     std::set<int> nt = getNeighbourTriangles(v);
     std::vector<int> ntv = std::vector<int>(nt.begin(),nt.end());
-    
-    for(int i=0;i<nt.size();i++){
-        if(!isCCW(ntv[i])){
-            for(int j=0;j<3;j++){
-                if(i==j)continue;
-                int t1 = ntv[i];
-                int t2 = triangles[t1].t[j];
-                if(areConnected(t1,t2)){
-                    for(int k=0;k<3;k++){
-                        if(isInside(t2,triangles[t1].v[k])){
-                            flip(t2,t1);
-                            nt = getNeighbourTriangles(v);
-                            ntv = std::vector<int>(nt.begin(),nt.end());
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     while(nt.size()>3){
         int n = ntv.size();
@@ -992,7 +973,7 @@ Triangulation::RemovedVertex Triangulation::removeVertex(int v){
         nt = getNeighbourTriangles(v);
         ntv = std::vector<int>(nt.begin(),nt.end());
     }
-    assert(ntv.size()==3);
+    __H_BREAK_ASSERT__(ntv.size()==3);
     RemovedVertex res{{ntv[0],ntv[1],ntv[2]},v};
     return res;
 }
@@ -1124,12 +1105,9 @@ void Triangulation::reAddVertex(Triangulation::RemovedVertex rmvx){
     __H_BREAK_ASSERT__(frontTest(f)&&frontTest(f1)&&frontTest(f2));
     __H_BREAK_ASSERT__(sanity(f)&&sanity(f1)&&sanity(f2));
 
-    for(int i=0;i<3;i++){
-        // legalize(rmvx.t[0],triangles[rmvx.t[0]].t[i]);
-        legalize(f,triangles[f].t[i]);
-        legalize(f1,triangles[f].t[i]);
-        legalize(f2,triangles[f].t[i]);
-    }
+    legalize(f);
+    legalize(f1);
+    legalize(f2);
 }
 
 std::set<int> Triangulation::getFRNN(int index, float r){
@@ -1228,12 +1206,14 @@ bool Triangulation::allSanity(){
     return res;
 }
 
-std::vector<std::pair<int,double>> Triangulation::get_all_FRNN(float r){
-    auto all_neighbours = std::vector<std::pair<int,double>>();
+std::vector<std::vector<std::pair<int,double>>> Triangulation::get_all_FRNN(float r){
+    auto all_neighbours = std::vector<std::vector<std::pair<int,double>>>(vcount,std::vector<std::pair<int,double>>());
+    int *neighbours = new int[vcount];
+    int *trianglesChecked = new int[tcount];
     for(int index=0;index<vcount;index++){
         int tri_index = vertices[index].tri_index;
-        auto neighbours = std::unordered_set<int>();
-        std::unordered_set<int> trianglesChecked = std::unordered_set<int>();
+        for(int i=0;i<vcount;i++)neighbours[i]=0;
+        for(int i=0;i<tcount;i++)trianglesChecked[i]=0;
         std::vector<int> checkingTriangles = std::vector<int>();
         checkingTriangles.push_back(tri_index);
         while(!checkingTriangles.empty()){
@@ -1243,19 +1223,19 @@ std::vector<std::pair<int,double>> Triangulation::get_all_FRNN(float r){
             for(int i=0;i<3;i++){
                 if(triangles[curr_triangle].v[i]==index){continue;}
                 int j = triangles[curr_triangle].v[i];
-                if(neighbours.find(j)!=neighbours.end()){continue;}
+                if(neighbours[j]){continue;}
                 double d = dist2(vertices[j].pos,vertices[index].pos);
                 if(d<=r){
-                    all_neighbours.push_back(std::make_pair(j,d));
-                    neighbours.insert(j);
+                    all_neighbours[index].push_back(std::make_pair(j,d));
+                    neighbours[j]=1;
                     isInside=true;
                 }
             }
             for(int i=0;i<3;i++){
-                if(trianglesChecked.find(triangles[curr_triangle].t[i])==trianglesChecked.end())
+                if(!trianglesChecked[triangles[curr_triangle].t[i]])
                     if(triangles[curr_triangle].t[i]!=-1 && isInside)checkingTriangles.push_back(triangles[curr_triangle].t[i]);
             }
-            trianglesChecked.insert(curr_triangle);
+            trianglesChecked[curr_triangle]=1;
         }
     }
     return all_neighbours;

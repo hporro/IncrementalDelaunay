@@ -177,7 +177,7 @@ int main(int argn, char** argv){
         double delta = currentTime - lastTime;
         time_passed+=delta;
         if(dgui->state->runningsimulation){
-            ts->step_fast(1.0/60.0);
+            ts->step_fast_all_exp(1.0/60.0);
             td->genBuffers();
         }
         if(dgui->state->has_to_change_vel){
