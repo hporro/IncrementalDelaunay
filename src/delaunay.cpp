@@ -7,6 +7,7 @@
 static bool initialized = false;
 
 #include <queue>
+#include <stack>
 #include <algorithm>
 #include <csignal>
 #include <cassert>
@@ -1208,18 +1209,22 @@ bool Triangulation::allSanity(){
 
 std::vector<std::vector<std::pair<int,double>>> Triangulation::get_all_FRNN(float r){
     auto all_neighbours = std::vector<std::vector<std::pair<int,double>>>(vcount,std::vector<std::pair<int,double>>());
+    for(int i=0;i<vcount;i++)all_neighbours[i].reserve(32);
+
     int *neighbours = new int[vcount];
     int *trianglesChecked = new int[tcount];
+    std::vector<int> tchk = std::vector<int>();
+    for(int i=0;i<vcount;i++)neighbours[i]=0;
+    for(int i=0;i<tcount;i++)trianglesChecked[i]=0;
     for(int index=0;index<vcount;index++){
+        tchk.clear();
         int tri_index = vertices[index].tri_index;
-        for(int i=0;i<vcount;i++)neighbours[i]=0;
-        for(int i=0;i<tcount;i++)trianglesChecked[i]=0;
-        std::vector<int> checkingTriangles = std::vector<int>();
-        checkingTriangles.push_back(tri_index);
+        std::stack<int> checkingTriangles = std::stack<int>();
+        checkingTriangles.push(tri_index);
         while(!checkingTriangles.empty()){
-            int curr_triangle = checkingTriangles[checkingTriangles.size()-1];
-            checkingTriangles.pop_back();
-            bool isInside = false;
+            int curr_triangle = checkingTriangles.top();
+            checkingTriangles.pop();
+            bool isInside = true;
             for(int i=0;i<3;i++){
                 if(triangles[curr_triangle].v[i]==index){continue;}
                 int j = triangles[curr_triangle].v[i];
@@ -1228,15 +1233,18 @@ std::vector<std::vector<std::pair<int,double>>> Triangulation::get_all_FRNN(floa
                 if(d<=r){
                     all_neighbours[index].push_back(std::make_pair(j,d));
                     neighbours[j]=1;
-                    isInside=true;
                 }
+                if(d>r) isInside=false;
             }
             for(int i=0;i<3;i++){
                 if(!trianglesChecked[triangles[curr_triangle].t[i]])
-                    if(triangles[curr_triangle].t[i]!=-1 && isInside)checkingTriangles.push_back(triangles[curr_triangle].t[i]);
+                    if(triangles[curr_triangle].t[i]!=-1 && isInside)checkingTriangles.push(triangles[curr_triangle].t[i]);
             }
             trianglesChecked[curr_triangle]=1;
+            tchk.push_back(curr_triangle);
         }
+        for(int i=0;i<all_neighbours[index].size();i++)neighbours[all_neighbours[index][i].first]=0;
+        for(int i=0;i<tchk.size();i++)trianglesChecked[tchk[i]]=0;
     }
     return all_neighbours;
 }

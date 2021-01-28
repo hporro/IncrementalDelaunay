@@ -93,10 +93,10 @@ int main(int argn, char** argv){
         return 1;
     }
 
-    int numP = 400;
+    int numP = 1000;
     float maxVel = 10;
 
-    float boundSize = 400;
+    float boundSize = 600;
     Vec2 p10 = Vec2{-boundSize,-boundSize};
     Vec2 p11 = Vec2{boundSize/2,-boundSize};
     Vec2 p12 = Vec2{boundSize/2,boundSize/4};
@@ -105,28 +105,28 @@ int main(int argn, char** argv){
     std::vector<Vec2> points = POINT_GENERATOR::gen_points_square(numP,p10,p11,p12,p13);
     std::vector<Vec2> points2 = POINT_GENERATOR::gen_points_grid(std::sqrt(numP),std::sqrt(numP),p10+Vec2{20,40},Vec2{p11[0]/8+20,p11[1]+40},Vec2{p12[0]/8+20,p12[1]/4+40},Vec2{p13[0]+20,p13[1]/4+40});
 
-    for(int i=0;i<100;i++){
-        float alpha = i/100.0;
+    for(int i=0;i<200;i++){
+        float alpha = i/200.0;
         points2.push_back((p10+Vec2{2,0})*alpha+(p11+Vec2{-2,0})*(1-alpha));
     }
-    for(int i=0;i<100;i++){
-        float alpha = i/100.0;
+    for(int i=0;i<200;i++){
+        float alpha = i/200.0;
         points2.push_back((p10+Vec2{2,-2})*alpha+(p11+Vec2{-2,-2})*(1-alpha));
     }
-    for(int i=0;i<100;i++){
-        float alpha = i/100.0;
+    for(int i=0;i<200;i++){
+        float alpha = i/200.0;
         points2.push_back((p10+Vec2{2,0})*alpha+(p13+Vec2{-2,0})*(1-alpha));
     }
-    for(int i=0;i<100;i++){
-        float alpha = i/100.0;
+    for(int i=0;i<200;i++){
+        float alpha = i/200.0;
         points2.push_back((p10+Vec2{0,0})*alpha+(p13+Vec2{-4,0})*(1-alpha));
     }
-    for(int i=0;i<100;i++){
-        float alpha = i/100.0;
+    for(int i=0;i<200;i++){
+        float alpha = i/200.0;
         points2.push_back((p11+Vec2{0,0})*alpha+(p12+Vec2{-2,0})*(1-alpha));
     }
-    for(int i=0;i<100;i++){
-        float alpha = i/100.0;
+    for(int i=0;i<200;i++){
+        float alpha = i/200.0;
         points2.push_back((p11+Vec2{0,0})*alpha+(p12+Vec2{0,0})*(1-alpha));
     }
     // for(int i=0;i<100;i++){
@@ -157,7 +157,8 @@ int main(int argn, char** argv){
     // }std::cout << std::endl;
 
     FluidSimulation* ts = new FluidSimulation(t,maxVel);
-    for(int i=ts->numP-1;i>=ts->numP-600;i--){
+    ts->h = 50;
+    for(int i=ts->numP-1;i>=ts->numP-1200;i--){
         ts->state_code[i]=0;
     }
 
