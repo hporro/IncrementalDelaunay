@@ -10,6 +10,8 @@ uniform vec2 offset;
 
 uniform float zoom;
 
+out float showing;
+
 void main()
 {
     float a = p1.x - p0.x;
@@ -20,5 +22,8 @@ void main()
     float posx = (((aPos.x - p0.x)/a - 0.5)*2 + offset.x)*zoom;
     float posy = (((aPos.y - p0.y)/a - 0.5)*2 + offset.y)*zoom;
 
+    showing=1.0f;
+    if(abs(aPos.x)>=10000)showing=0.0f;
+    if(abs(aPos.y)>=10000)showing=0.0f;
     gl_Position = vec4(posx, posy, 0, 1.0);
 }

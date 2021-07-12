@@ -96,6 +96,7 @@ public:
     int point_being_moved = -1;
 
     bool doLogSearch = true;
+    bool doSorting = true;
 
     float a;
     Vec2 p0,p1,p2,p3;
